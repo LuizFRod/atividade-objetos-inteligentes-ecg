@@ -1,5 +1,5 @@
 """Coleta MQTT 3.1.1 QoS0 para o demonstrador sintetico, sem dependencias externas."""
-import argparse, datetime, json, socket, struct, time, uuid
+import argparse, datetime, getpass, json, socket, ssl, struct, time, uuid
 from pathlib import Path
 
 def field(text):
@@ -31,15 +31,21 @@ def receive(stream):
 def main():
     cli=argparse.ArgumentParser()
     cli.add_argument('--segundos',type=int,default=600)
-    cli.add_argument('--saida',default='dados/ensaio-600s.json')
+    cli.add_argument('--saida',default='dados/ensaio-tls-novo.json')
+    cli.add_argument('--host',default='i066e913.ala.us-east-1.emqxsl.com')
+    cli.add_argument('--usuario',default='painel-ecg')
+    cli.add_argument('--ca',default=str(Path(__file__).resolve().parents[1]/'seguranca/emqxsl-ca.crt'))
     args=cli.parse_args()
     if args.segundos<1:raise ValueError('Duracao deve ser positiva')
+    password=getpass.getpass("Senha MQTT do usuario "+args.usuario+": ")
     started=time.monotonic();wall=time.time(); records=[]; events=[]
     target=Path(args.saida);target.parent.mkdir(parents=True,exist_ok=True)
-    stream=socket.create_connection(('broker.hivemq.com',1883),timeout=15)
+    ctx=ssl.create_default_context(cafile=args.ca)
+    tcp=socket.create_connection((args.host,8883),timeout=30)
+    stream=ctx.wrap_socket(tcp,server_hostname=args.host)
     with stream:
         stream.settimeout(30)
-        stream.sendall(packet(0x10,field('MQTT')+bytes([4,2])+struct.pack('!H',30)+field('ecg-coleta-'+uuid.uuid4().hex[:10])))
+        stream.sendall(packet(0x10,field('MQTT')+bytes([4,194])+struct.pack('!H',30)+field('ecg-coleta-'+uuid.uuid4().hex[:10])+field(args.usuario)+field(password)))
         header,body=receive(stream)
         if header!=0x20 or len(body)<2 or body[1]!=0:raise ConnectionError('CONNACK recusado')
         stream.sendall(packet(0x82,b'\0\1'+field('aula/ecg/esp32-84729/amostras')+b'\0'))
@@ -51,11 +57,12 @@ def main():
                 stream.sendall(packet(0xC0,b''));ping=time.monotonic()
             try:header,body=receive(stream)
             except socket.timeout:continue
+            if header>>4==9 and (len(body)<3 or body[2]==128):raise PermissionError('Assinatura recusada pelo broker')
             if header>>4!=3:continue
             size=struct.unpack('!H',body[:2])[0]
             try:payload=json.loads(body[2+size:])
             except (ValueError,UnicodeDecodeError):continue
-            if payload.get('origem')!='ad8232-simulado':continue
+            if payload.get('origem')!='ad8232-simulado' or payload.get('transporte')!='mqtts':continue
             records.append({'recebido_unix_ms':round(time.time()*1000),'topico':body[2:2+size].decode(),'payload':payload})
         stream.sendall(packet(0xE0,b''))
     duration=time.monotonic()-started
@@ -63,7 +70,7 @@ def main():
     resets=sum(records[i]['payload']['indice']<records[i-1]['payload']['indice'] for i in range(1,len(records)))
     delta=[records[i]['payload']['indice']-records[i-1]['payload']['indice']-len(records[i-1]['payload']['amostras']) for i in range(1,len(records))]
     positive=sum(x for x in delta if x>0)
-    report={'inicio_utc':datetime.datetime.fromtimestamp(wall,datetime.timezone.utc).isoformat(),'duracao_receptor_s':round(duration,3),'lotes_recebidos':len(records),'amostras_recebidas':samples,'regressoes_indice':resets,'lacunas_indices_observadas':positive,'nota':'Coleta no receptor por tempo de relogio. Indices e frequencia sao do tempo simulado. Lacunas incluem efeitos de aquisicao e transporte; nao medem taxa de entrega isoladamente. Mais de uma instancia publicadora pode invalidar comparacoes.','mensagens':records,'eventos':events}
+    report={'broker':args.host,'porta':8883,'tls_verificado':True,'inicio_utc':datetime.datetime.fromtimestamp(wall,datetime.timezone.utc).isoformat(),'duracao_receptor_s':round(duration,3),'lotes_recebidos':len(records),'amostras_recebidas':samples,'regressoes_indice':resets,'lacunas_indices_observadas':positive,'nota':'Coleta no receptor por tempo de relogio. Indices e frequencia sao do tempo simulado. Lacunas incluem efeitos de aquisicao e transporte; nao medem taxa de entrega isoladamente. Mais de uma instancia publicadora pode invalidar comparacoes.','mensagens':records,'eventos':events}
     target.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k not in ('mensagens','eventos')},ensure_ascii=False))
 

@@ -1,14 +1,9 @@
-Verificação local em 5 de novembro de 2026
+Revisão de segurança em 5 de novembro de 2026
 
-Fluxo Node-RED: JSON válido, IDs únicos, referências internas resolvidas.
-Função receptora: conectado, desconectado, reconexão, limpeza do gráfico e dados inválidos verificados.
-Montagem: endpoints e pinos do custom chip conferidos; OUTPUT -> GPIO34; LOP/LON -> GPIO32/33; LED GPIO2.
-Firmware demonstrado: compilado e executado no Wokwi na etapa funcional.
-Coletor Python: sintaxe compilada.
-Dados curtos: 10 mensagens MQTT recebidas, 25 valores por lote, total de 250 valores sintéticos.
-Credenciais: nenhum arquivo secrets.h real incluído; modelos contêm valores vazios.
-TLS: configuração e variante preparadas, ainda sem implantação ou teste com broker próprio.
-
-O teste funcional não equivale a validação clínica nem a comprovação das metas quantitativas da proposta.
-
-Variante TLS: compilada no Wokwi com as definições vazias do exemplo incorporadas ao sketch. Execução indicou TLS pendente e MQTT bloqueado. Certificado e autenticação com provedor real não ensaiados.
+Firmware TLS compilado e executado no Wokwi. Senha recebida em RAM pelo serial, sem eco e sem inclusão no código. Node-RED conectado por TLS com CA/hostname verificados e autenticação. Publicador do teste manual separado do leitor.
+Coleta TLS: 372 lotes, 9300 valores, janela 60 s, intervalo primeiro/último 59,834 s, uma sessão, 0 regressões e 352 posições ausentes. Não mede perda isolada de rede.
+Testes negativos: MQTT anônimo e senha incorreta recusados com CONNACK 4; hostname divergente rejeitado pelo cliente TLS. Não equivale a auditoria completa de ACL.
+Teste manual: 250 valores enviados por MQTT OUT e recebidos no gráfico pelo broker TLS.
+Contato: desconexão/reconexão testadas na versão TLS. A limpeza usa action=replace e um ponto com y nulo nos lotes desconectados; o gráfico vazio e a retomada foram conferidos visualmente.
+Limite observado: gateway público Wokwi encerrou uma conexão; simulação reiniciada e autenticada novamente.
+Vídeo YouTube: pendente do autor. Aceitação do modelo simulado: depende do docente.

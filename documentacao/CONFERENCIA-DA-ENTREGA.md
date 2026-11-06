@@ -11,7 +11,7 @@ Conferência baseada nos seis itens transcritos da atividade e no artigo origina
 | 5 Resultados com imagens descritas | Seção 3, Figuras 4 a 6, arquivos dados/ | Incluídos |
 | 6 Link YouTube não listado em Resultados | Campo destacado na seção 3.4 e roteiro | Pendente de vídeo e link pelo autor |
 | Repositório com dados e fontes | GitHub LuizFRod/atividade-objetos-inteligentes-ecg | Publicado |
-| Segurança prevista no artigo anterior | Modelos Mosquitto, ACL e variante TLS | Preparada, não implantada; sem broker próprio |
+| Segurança prevista no artigo anterior | EMQX TLS 8883 autenticado, CA, dados e testes negativos | Implantada e ensaiada; auditoria integral de ACL fora do alcance |
 
 O artigo não declara aquisição física, diagnóstico ou metas quantitativas não comprovadas. O sinal é sintético e o módulo é um modelo funcional, sem eletrônica interna completa do AD8232.
 

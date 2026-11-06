@@ -1,0 +1,19 @@
+{
+  "broker": "i066e913.ala.us-east-1.emqxsl.com",
+  "porta": 8883,
+  "transporte": "MQTT 3.1.1 sobre TLS autenticado",
+  "janela_configurada_s": 60,
+  "inicio_utc": "2026-11-06T01:13:16.997Z",
+  "fim_utc": "2026-11-06T01:14:16.831Z",
+  "intervalo_entre_primeiro_e_ultimo_lote_s": 59.834,
+  "lotes_recebidos": 372,
+  "amostras_recebidas": 9300,
+  "sessoes": [
+    "ecg84729-00c40a24-06400ce4"
+  ],
+  "regressoes_indice": 0,
+  "lacunas_indices_observadas": 352,
+  "minimo_contagens": 1147,
+  "maximo_contagens": 2166,
+  "nota": "Coleta pelo MQTT IN do Node-RED com TLS e CA verificada. Dados sinteticos; intervalo de chegada nao equivale a taxa de amostragem. Lacunas nao isolam perda de rede. Ensaio nao comprova disponibilidade continua nem 99% de entrega."
+}

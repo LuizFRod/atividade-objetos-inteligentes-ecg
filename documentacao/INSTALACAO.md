@@ -17,6 +17,10 @@ O firmware e o componente foram compilados e executados no Wokwi. A publicação
 
 Esta verificação é funcional e não é ensaio de precisão, perda de pacotes ou validação clínica. Foram observadas lacunas de temporização no firmware, especialmente durante conexão/envio de rede. O contador `perdidas_temporizacao` registra períodos de amostragem perdidos, não todos os dados descartados nem perdas de rede.
 
+## Configuração segura do Node-RED
+
+Após importar, configure o broker ECG seguro • EMQX com usuário painel-ecg e sua senha. Configure ECG • teste publicador TLS com usuário esp32-84729 e sua senha. Nas configurações TLS, carregue seguranca/emqxsl-ca.crt como CA, mantenha a validação e o Server Name igual ao host. A exportação não inclui senhas nem a CA no armazenamento de credenciais.
+
 ## Página já adicionada ao Node-RED local
 
 [AD8232 simulado](http://localhost:1880/dashboard-ecg-84729/ad8232)
@@ -27,7 +31,7 @@ O Node-RED precisa permanecer rodando e a nova simulação precisa publicar para
 
 ## Como abrir os arquivos no Wokwi
 
-A cópia foi salva como projeto público após autorização do autor: https://wokwi.com/projects/479896326597353473. Seu projeto original não foi alterado.
+A cópia foi salva como projeto público após autorização do autor: https://wokwi.com/projects/479900142449265665. Seu projeto original não foi alterado.
 
 Para restaurar manualmente:
 
@@ -37,7 +41,7 @@ Para restaurar manualmente:
 4. Substitua o conteúdo dessas duas abas pelos arquivos de mesmo nome nesta pasta.
 5. Substitua `diagram.json` pelo arquivo desta pasta. O circuito inclui ESP32, módulo, chave, LED e resistor.
 6. Em **Library Manager**, adicione **PubSubClient**. O arquivo `libraries.txt` desta pasta registra essa dependência.
-7. Inicie a simulação e aguarde Wi-Fi/MQTT. O serial deve registrar `MQTT OK`, o índice e o estado dos eletrodos.
+7. Inicie a simulação e digite a senha de esp32-84729 no campo do monitor serial, pressionando Enter. Aguarde Wi-Fi e NTP. O serial deve registrar `MQTTS CONECTADO` e `MQTT OK`. Não salve a senha no código.
 8. No menu do diagrama, use **Fit** para enquadrar todos os componentes.
 9. Salve a cópia com nome próprio, confirmando a visibilidade pretendida.
 
@@ -68,9 +72,9 @@ LOP/LON são nomes usados pelo componente personalizado para as funções LO+/LO
 
 ## MQTT e formato
 
-Broker `broker.hivemq.com`, porta 1883, MQTT 3.1.1, sem TLS/autenticação, amostras em QoS 0 e sem retain. Tópico: `aula/ecg/esp32-84729/amostras`.
+Broker `i066e913.ala.us-east-1.emqxsl.com`, porta 8883, MQTT 3.1.1, com TLS, CA/hostname verificados e autenticação, amostras em QoS 0 e sem retain. Tópico: `aula/ecg/esp32-84729/amostras`.
 
-Campos preservados: dispositivo, indice, intervalo_us, eletrodos, amostras. Campos adicionais: `origem: "ad8232-simulado"` e `perdidas_temporizacao`. O índice corresponde à primeira amostra do lote.
+Campos preservados: dispositivo, indice, intervalo_us, eletrodos, amostras. Campos adicionais: `origem: "ad8232-simulado"`, `transporte: "mqtts"`, `sessao` e `perdidas_temporizacao`. O índice corresponde à primeira amostra do lote.
 
 Os lotes marcados como desconectados contêm leituras do ADC, mas essas leituras não entram no gráfico da nova página. Não há fila persistente: lotes podem ser descartados em falhas de rede. Não há comandos MQTT para o LED nesta versão. O gráfico usa horário reconstruído no receptor e não elimina nem quantifica todas as perdas entre lotes.
 
@@ -80,7 +84,7 @@ O Wokwi documenta um ADC analógico simplificado com referência virtual de 5 V.
 
 Use **“modelo funcional de interface do AD8232 com saída sintética”**. Não descreva esta execução como leitura de eletrodos físicos, ECG de paciente ou emulação elétrica validada do chip. A aceitação desse modelo como sensor simulado para a disciplina deve ser confirmada com o professor.
 
-Veja `artigo-texto.md` para os trechos propostos. Vídeo YouTube e repositório ainda precisam ser criados, ter seus links incluídos no artigo e estar acessíveis ao avaliador. O broker público sem TLS/autenticação não atende à especificação de segurança da proposta original.
+O repositório já está publicado e o artigo contém os links reais. O vídeo YouTube ainda precisa ser gravado e ter seu link inserido na seção 3.4. A conexão TLS autenticada foi implantada e ensaiada; veja seguranca/ATIVACAO-TLS.md.
 
 ## Referências técnicas da implementação
 

@@ -9,13 +9,13 @@ São Paulo SP Brasil
 
 Resumo
 
-Este trabalho apresenta um demonstrador acadêmico de Internet das Coisas para visualizar um sinal ECG sintético. A implementação utiliza ESP32 no Wokwi, um modelo funcional de interface do AD8232, LED externo e comunicação MQTT pela Internet. O componente personalizado gera uma saída analógica sintética, lida pelo ADC do ESP32 em lotes de 25 valores, com intervalo nominal de 4000 microssegundos. Uma chave representa a condição dos eletrodos; o LED indica desconexão, indisponibilidade MQTT e picos sintéticos. No Node-RED, o FlowFuse Dashboard exibe a curva e os estados de operação. A execução demonstrou publicação, recepção, visualização e suspensão do traçado durante desconexão simulada. O transporte utilizado no ensaio foi HiveMQ público, porta 1883, sem TLS ou autenticação. O modelo não reproduz a eletrônica interna do AD8232 nem adquire sinais de pessoas. A contribuição ao ODS 3 é educacional, sem diagnóstico ou comprovação de benefício clínico.
+Este trabalho apresenta um demonstrador acadêmico de Internet das Coisas para visualizar um sinal ECG sintético. A implementação utiliza ESP32 no Wokwi, um modelo funcional de interface do AD8232, LED externo e comunicação MQTT pela Internet. O componente personalizado gera uma saída analógica sintética, lida pelo ADC do ESP32 em lotes de 25 valores, com intervalo nominal de 4000 microssegundos. Uma chave representa a condição dos eletrodos; o LED indica desconexão, indisponibilidade MQTT e picos sintéticos. No Node-RED, o FlowFuse Dashboard exibe a curva e os estados de operação. A execução demonstrou publicação, recepção, visualização e suspensão do traçado durante desconexão simulada. A versão final utiliza EMQX Cloud com MQTT sobre TLS na porta 8883, autenticação e validação do servidor. Uma coleta segura registrou 372 lotes e 9300 valores; os ensaios anteriores sem TLS foram preservados como histórico. O modelo não reproduz a eletrônica interna do AD8232 nem adquire sinais de pessoas. A contribuição ao ODS 3 é educacional, sem diagnóstico ou comprovação de benefício clínico.
 
 Palavras chave: Internet das Coisas; ECG sintético; ESP32; AD8232 simulado; MQTT; ODS 3.
 
 Abstract
 
-This paper presents an educational Internet of Things demonstrator for visualizing a synthetic ECG waveform. The implementation uses an ESP32 in Wokwi, a functional AD8232 interface model, an external LED, and Internet MQTT communication. The custom component generates an analog output that is sampled by the ESP32 ADC and transmitted in batches of 25 values at a nominal interval of 4000 microseconds. A switch represents electrode contact, while the LED indicates disconnection, MQTT availability, and synthetic peaks. A Node-RED FlowFuse Dashboard displays the waveform and device states. Functional tests demonstrated publishing, reception, visualization, and waveform suspension during simulated disconnection. The experiment used the public HiveMQ broker on port 1883 without TLS or authentication. The model does not reproduce the internal AD8232 electronics or acquire human signals. Its contribution to SDG 3 is educational, without diagnostic claims or evidence of clinical benefit.
+This paper presents an educational Internet of Things demonstrator for visualizing a synthetic ECG waveform. The implementation uses an ESP32 in Wokwi, a functional AD8232 interface model, an external LED, and Internet MQTT communication. The custom component generates an analog output that is sampled by the ESP32 ADC and transmitted in batches of 25 values at a nominal interval of 4000 microseconds. A switch represents electrode contact, while the LED indicates disconnection, MQTT availability, and synthetic peaks. A Node-RED FlowFuse Dashboard displays the waveform and device states. Functional tests demonstrated publishing, reception, visualization, and waveform suspension during simulated disconnection. The final version uses EMQX Cloud with MQTT over TLS on port 8883, authentication, and server validation. A secure capture recorded 372 batches and 9300 values; earlier unencrypted experiments are retained as historical data. The model does not reproduce the internal AD8232 electronics or acquire human signals. Its contribution to SDG 3 is educational, without diagnostic claims or evidence of clinical benefit.
 
 Keywords: Internet of Things; synthetic ECG; ESP32; simulated AD8232; MQTT; SDG 3.
 
@@ -41,9 +41,9 @@ Figura 1. Arquitetura da demonstração simulada e caminho das mensagens. A comu
 
 2.1 Plataforma e ambiente de desenvolvimento
 
-Foi utilizada a placa ESP32 DevKitC V4 disponível no Wokwi. O Wi-Fi integrado permite ao firmware publicar diretamente no broker MQTT, dispensando Arduino Uno, Firmata ou uma ponte serial USB. O monitor serial é usado para depuração e não converte mensagens para MQTT. A leitura do GPIO34 utiliza analogRead(), cujo retorno corresponde ao valor bruto do ADC, sem calibração em milivolts (ESPRESSIF SYSTEMS, s.d. a).
+Foi utilizada a placa ESP32 DevKitC V4 disponível no Wokwi. O Wi-Fi integrado permite ao firmware publicar diretamente no broker MQTT, dispensando Arduino Uno, Firmata ou uma ponte serial USB. O monitor serial recebe a senha do dispositivo somente em memória e apresenta mensagens de depuração; não atua como ponte entre interfaces. A leitura do GPIO34 utiliza analogRead(), cujo retorno corresponde ao valor bruto do ADC, sem calibração em milivolts (ESPRESSIF SYSTEMS, s.d. a).
 
-O firmware foi escrito em C++ com Arduino ESP32, WiFi.h e PubSubClient. O componente externo foi escrito em C por meio da Custom Chips API do Wokwi, que permite definir pinos, temporizadores e controles de modelos personalizados (WOKWI, s.d. a). A aplicação receptora utiliza Node-RED 5.0.9 e o pacote @flowfuse/node-red-dashboard. Os códigos, arquivos de montagem e instruções de reprodução constam no repositório indicado na seção 3.4.
+O firmware foi escrito em C++ com Arduino ESP32, WiFi.h, WiFiClientSecure, sincronização NTP e PubSubClient. O componente externo foi escrito em C por meio da Custom Chips API do Wokwi, que permite definir pinos, temporizadores e controles de modelos personalizados (WOKWI, s.d. a). A aplicação receptora utiliza Node-RED 5.0.9 e o pacote @flowfuse/node-red-dashboard. Os códigos, arquivos de montagem e instruções de reprodução constam no repositório indicado na seção 3.4.
 
 Elemento | Quantidade | Papel na versão executada
 
@@ -86,7 +86,7 @@ A atualização substitui a descrição de LED no GPIO25 e resistor de 330 ohms 
 
 2.4 Funcionamento do firmware e do atuador
 
-O setup configura o LED, as entradas digitais, o ADC com resolução nominal de 12 bits e sua atenuação. Em seguida, inicia a conexão ao ponto de acesso Wokwi GUEST e define o servidor MQTT. O identificador do cliente combina parte do identificador do ESP32 e um valor aleatório, reduzindo conflitos entre reinicializações. O firmware registra no serial os resultados de publicação, o índice e o estado de contato.
+O setup configura o LED, as entradas digitais, o ADC com resolução nominal de 12 bits e sua atenuação. Em seguida, inicia a conexão ao ponto de acesso Wokwi GUEST, configura a CA pública e o servidor MQTT TLS e solicita a senha pelo monitor serial. A conexão MQTT aguarda credencial e horário NTP válidos. O identificador do cliente combina parte do identificador do ESP32 e um valor aleatório, reduzindo conflitos entre reinicializações. O firmware registra no serial os resultados de publicação, o índice e o estado de contato.
 
 O loop acompanha Wi-Fi e MQTT e tenta reconectar em intervalos de cinco segundos. A aquisição utiliza micros() e intervalo nominal de 4000 microssegundos. Quando o atraso ultrapassa períodos completos, o firmware avança o índice e incrementa perdidas_temporizacao. O lote incompleto é descartado para não representar leituras separadas por lacuna como se fossem contíguas. Uma mudança de contato também reinicia o lote. A cada 25 leituras, é construída a mensagem e realizada a publicação.
 
@@ -106,7 +106,7 @@ Figura 3. Fluxograma do modelo externo, leitura pelo ESP32, atuação e processa
 
 2.5 Comunicação MQTT e processamento no Node RED
 
-Foi utilizado MQTT 3.1.1 por Wi-Fi e Internet com broker.hivemq.com, porta TCP 1883, sem TLS e sem autenticação, exclusivamente para o ensaio com dados sintéticos. O tópico único de amostras é aula/ecg/esp32-84729/amostras. As publicações utilizam QoS 0 e retain desativado. Não foram implementados tópicos separados de estado e comando, Last Will ou confirmação de execução de comandos. O uso de publicação e assinatura segue a organização do protocolo MQTT (OASIS, 2014).
+A versão final utiliza MQTT 3.1.1 por Wi-Fi e Internet com EMQX Cloud Serverless, host i066e913.ala.us-east-1.emqxsl.com e porta 8883, com TLS e autenticação. Os ensaios iniciais no HiveMQ público, porta 1883 sem TLS, foram mantidos como histórico e não comprovam o transporte seguro atual. O tópico único de amostras é aula/ecg/esp32-84729/amostras. As publicações utilizam QoS 0 e retain desativado. Não foram implementados tópicos separados de estado e comando, Last Will ou confirmação de execução de comandos. O uso de publicação e assinatura segue a organização do protocolo MQTT (OASIS, 2014).
 
 Campo JSON | Significado
 
@@ -120,49 +120,53 @@ eletrodos | conectados ou desconectados segundo a chave
 
 origem | Identificação ad8232-simulado
 
+transporte e sessao | mqtts e identificador desta execução
+
 perdidas_temporizacao | Contador de períodos perdidos na rotina de aquisição
 
 amostras | Vetor de 25 contagens do ADC simulado
 
 O nó MQTT IN entrega o payload ao Debug e à função de validação. A função verifica identificação, índice, intervalo e valores numéricos, convertendo as amostras em pontos x e y. O horário é reconstruído no receptor a partir da chegada do lote e do intervalo informado, com avanço crescente entre lotes. O índice não é utilizado para reordenar ou recuperar mensagens, e nem todas as lacunas entre lotes são representadas explicitamente no traçado.
 
-O ui-chart recebe vetores de pontos no modo append, com janela configurada de dez segundos e limite adicional de 5000 pontos, conforme o mapeamento do FlowFuse Dashboard (FLOWFUSE, s.d.). Quando o estado é desconectados, o gráfico é limpo uma vez e deixa de receber os valores do lote. O painel mantém separados o último evento de conexão MQTT, a recepção recente e os metadados do contato. Uma verificação a cada dois segundos detecta ausência de mensagens pelo limite de dez segundos ou três vezes a duração nominal do último lote, prevalecendo o maior.
+O ui-chart recebe vetores de pontos no modo append, com janela configurada de dez segundos e limite adicional de 5000 pontos, conforme o mapeamento do FlowFuse Dashboard (FLOWFUSE, s.d.). Quando o estado é desconectados, o receptor envia action replace e um ponto com y nulo, que representa ausência de medição e substitui a série anterior. Os valores de ADC daquele lote não entram no traçado. O comando é repetido nos lotes desconectados para manter a indicação vazia. O painel mantém separados o último evento de conexão MQTT, a recepção recente e os metadados do contato. Uma verificação a cada dois segundos detecta ausência de mensagens pelo limite de dez segundos ou três vezes a duração nominal do último lote, prevalecendo o maior.
 
-A nova aba foi importada sem substituir os fluxos anteriores. O painel local encontra-se no caminho /dashboard-ecg-84729/ad8232. O endereço localhost é restrito ao computador que executa o Node-RED; não representa hospedagem pública. Há também um teste manual inject para MQTT OUT, cuja mensagem só alimenta o gráfico após retornar pelo broker. Ele deve ser executado separadamente da simulação para não misturar as fontes (OPENJS FOUNDATION, s.d.).
+A nova aba foi importada sem substituir os fluxos anteriores. O painel local encontra-se no caminho /dashboard-ecg-84729/ad8232. O endereço localhost é restrito ao computador que executa o Node-RED; não representa hospedagem pública. Há também um teste manual inject para MQTT OUT, cuja mensagem só alimenta o gráfico após retornar pelo broker. O publicador de teste utiliza configuração TLS e credencial de publicação separadas da conexão do leitor. Ele deve ser executado separadamente da simulação para não misturar as fontes (OPENJS FOUNDATION, s.d.).
 
 2.5.1 Segurança da comunicação
 
-A execução demonstrada não atende à conexão com TLS, autenticação individual e permissões de tópicos prevista na proposta anterior. O broker de teste é compartilhado e não fornece privacidade do tópico. A implantação de Mosquitto em servidor próprio ainda depende de infraestrutura e credenciais sob controle do autor; nenhum ensaio seguro é apresentado como concluído.
+A segurança de transporte foi implantada em uma conta EMQX Cloud Serverless do autor. A infraestrutura é compartilhada pelo provedor, com implantação autenticada; não foi instalado o Mosquitto dedicado inicialmente proposto. O ESP32 utiliza WiFiClientSecure com a CA pública da implantação, verifica o servidor e aguarda sincronização NTP. Não há alternativa automática na porta 1883 ou uso de setInsecure. O Node-RED mantém TLS e verificação de certificado habilitados (EMQX, s.d. a).
 
-O repositório inclui modelos de configuração Mosquitto com listener TLS, usuários separados e ACL, além de uma variante de firmware com WiFiClientSecure, CA confiável e verificação de horário. A variante foi compilada no Wokwi com definições vazias de teste e bloqueou o MQTT por falta de configuração. Esses arquivos são preparação de implantação, não evidência de serviço ativo. Sua ativação e validação com certificado, DNS e credenciais reais permanecem pendentes. As configurações correspondem aos mecanismos documentados pelo Eclipse Mosquitto (ECLIPSE FOUNDATION, s.d.).
+Foram utilizadas identidades separadas: esp32-84729 para publicar e painel-ecg para receber. A política de autorização limita o tópico de amostras e prevê negação das demais operações (EMQX, s.d. b). A validação de login e certificado não constitui auditoria integral dessa política. No Wokwi público, a senha é informada pelo serial a cada execução, fica em RAM e não é impressa nem gravada no código. As credenciais do Node-RED permanecem no ambiente local. A CA e os nomes de usuários são públicos; senhas e chaves privadas não acompanham o repositório. Os exemplos Mosquitto foram mantidos apenas como alternativa de implantação.
 
 2.6 Procedimentos de verificação e registro
 
 Foram verificadas a compilação e execução do firmware e do componente, a publicação no monitor serial, a recepção do JSON, a conversão dos lotes e a visualização no navegador. A chave foi acionada para provocar desconexão e posterior retorno, observando-se o LED e o tratamento do traçado. Foram preservadas capturas da montagem e das duas condições do painel.
 
-O ensaio curto registrou dez mensagens realmente recebidas do broker, identificadas por origem ad8232-simulado, totalizando 250 valores. Os dados incluem horário de chegada no receptor, tópico e payload. A verificação local conferiu sintaxe e referências do fluxo, o espaçamento nominal de quatro milissegundos por ponto e a rejeição de campos inválidos. O teste não demonstra, por si só, taxa de entrega ou atraso de rede.
+O ensaio inicial sem TLS registrou dez mensagens realmente recebidas do broker, identificadas por origem ad8232-simulado, totalizando 250 valores. Os dados incluem horário de chegada no receptor, tópico e payload. A verificação local conferiu sintaxe e referências do fluxo, o espaçamento nominal de quatro milissegundos por ponto e a rejeição de campos inválidos. O teste não demonstra, por si só, taxa de entrega ou atraso de rede.
 
-Também foi executada coleta por aproximadamente dez minutos de relógio do receptor, utilizando o script ensaios/coletar_mqtt.py. O programa assina o tópico e registra mensagens do modelo. A duração é medida por relógio monotônico do computador. O tempo do Wokwi pode avançar a velocidade diferente do tempo real; por isso, frequência nominal, amostras por segundo de chegada e cobertura de índices não são tratadas como medidas equivalentes.
+Na etapa inicial sem TLS também foi executada coleta por aproximadamente dez minutos de relógio do receptor, utilizando o script ensaios/coletar_mqtt.py. O programa assina o tópico e registra mensagens do modelo. A duração é medida por relógio monotônico do computador. O tempo do Wokwi pode avançar a velocidade diferente do tempo real; por isso, frequência nominal, amostras por segundo de chegada e cobertura de índices não são tratadas como medidas equivalentes.
+
+Após a migração, o Node-RED registrou mensagens recebidas por sua conexão MQTT TLS autenticada durante uma janela configurada de 60 segundos. Os horários UTC de chegada delimitam o intervalo observado entre primeiro e último lote. Foram registrados sessão, índices e valores em JSONL e CSV, sem credenciais. Um script independente testou recusa de login anônimo, senha incorreta e hostname divergente; os relatórios constam no repositório.
 
 3 Resultados
 
 3.1 Integração e comportamento observado
 
-A demonstração apresentou leituras variáveis do ADC GPIO34, publicação MQTT e gráfico com ciclos da forma de onda sintética. A Figura 4 mostra a execução conectada. Os metadados indicam dispositivo, índice da primeira amostra, quantidade e taxa nominal. A forma de onda resulta do modelo matemático externo, sem captação de ECG humano.
+A demonstração apresentou leituras variáveis do ADC GPIO34, publicação MQTT e gráfico com ciclos da forma de onda sintética. A Figura 4 mostra a execução conectada ao broker TLS. Os metadados indicam dispositivo, índice da primeira amostra, quantidade e taxa nominal. A forma de onda resulta do modelo matemático externo, sem captação de ECG humano.
 
-Figura 4. Dashboard durante recepção de lotes e apresentação de sinal sintético lido pelo ADC. O tempo é reconstruído no receptor e os valores verticais são contagens do ADC simulado. Fonte: captura da execução, 2026.
+Figura 4. Dashboard durante recepção de lotes do ESP32 pelo EMQX com TLS e apresentação do sinal sintético lido pelo ADC. O tempo é reconstruído no receptor e os valores verticais são contagens do ADC simulado. Fonte: captura da execução, 2026.
 
 Ao acionar a chave, o modelo elevou LOP e LON; o firmware registrou desconectados e manteve o LED aceso. A aplicação suspendeu a inclusão dos valores e exibiu a condição de contato interrompido, conforme a Figura 5. O restabelecimento da chave retomou a aquisição aceita pelo receptor e o traçado.
 
-Figura 5. Painel após desconexão simulada: o gráfico está suspenso e a conexão MQTT permanece indicada separadamente. Fonte: captura da execução, 2026.
+Figura 5. Painel após desconexão simulada na versão TLS: a série anterior é substituída por ausência de medição e a conexão MQTT permanece indicada separadamente. Fonte: captura da execução, 2026.
 
 3.2 Montagem e dados capturados
 
-Figura 6. Execução da montagem no Wokwi com o bloco AD8232 SIMULADO e registro serial da condição de desconexão. O esquema nomeado completo está na Figura 2 e em diagram.json. Fonte: captura da execução, 2026.
+Figura 6. Montagem no Wokwi registrada na etapa inicial, com o bloco AD8232 SIMULADO e a condição de desconexão. A montagem elétrica foi mantida na migração TLS; esta imagem não é evidência de criptografia. O esquema nomeado completo está na Figura 2 e em diagram.json. Fonte: captura da execução, 2026.
 
 Observação | Resultado documentado
 
-Coleta curta | 10 lotes e 250 valores
+Coleta histórica sem TLS | 10 lotes e 250 valores
 
 Comprimento observado | 25 amostras por lote
 
@@ -174,7 +178,7 @@ Menor e maior valor no conjunto curto | 1147 e 2166 contagens
 
 Sequência no conjunto curto | Sem lacunas entre os dez lotes capturados
 
-Duração da coleta estendida | 600.346 segundos no receptor
+Coleta histórica sem TLS por | 600.346 segundos no receptor
 
 Lotes e valores na coleta estendida | 1682 lotes e 42050 valores
 
@@ -186,11 +190,33 @@ Os valores mínimo e máximo descrevem somente o conjunto curto capturado. Não 
 
 A coleta estendida registrou a sequência no receptor e as lacunas positivas de índice entre lotes recebidos. Essas lacunas podem resultar de atrasos de aquisição, descarte de lote ou transporte. Sem um registro independente de todos os lotes efetivamente publicados, não representam isoladamente perda de rede. A taxa de entrega não foi inferida.
 
+3.2.1 Comunicação segura e testes de acesso
+
+Verificação na versão TLS | Resultado observado
+
+Publicação do ESP32 e recepção no painel | Handshake autenticado e lotes recebidos
+
+Janela configurada / intervalo primeiro ao último lote | 60 s / 59.834 s
+
+Lotes e valores recebidos | 372 lotes / 9300 valores
+
+Sessões / regressões / posições ausentes entre lotes | 1 / 0 / 352
+
+MQTT anônimo e senha propositalmente incorreta | Ambos recusados com CONNACK 4
+
+Hostname divergente do certificado | Rejeitado pelo cliente TLS
+
+Teste manual inject → MQTT OUT → broker → MQTT IN | 250 valores recebidos no gráfico
+
+O teste independente negociou TLS 1.2 com CA e hostname verificados. O serial do ESP32 confirmou autenticação e publicação; a coleta do Node-RED registrou os lotes da mesma sessão. As 352 posições ausentes entre lotes não isolam perda de rede. A janela segura é distinta do ensaio histórico de dez minutos e não o substitui como teste prolongado. Os resultados não comprovam disponibilidade contínua, desempenho clínico ou uma auditoria integral das permissões de tópicos.
+
+Figura 7. Teste manual isolado: lote de 250 valores retornou pelo broker com TLS. O campo eletrodos identifica teste Node-RED; estes valores não pertencem à coleta de ADC do ESP32. Fonte: captura da execução, 2026.
+
 3.3 Discussão das limitações
 
 O resultado confirma uma cadeia funcional simulada de leitura analógica, transporte e atuação. O modelo não reproduz o condicionamento elétrico do AD8232 nem verifica contato com pessoas. Também não valida o uso em diagnóstico. O ensaio não comprovou as metas anteriores de pelo menos 99% de entrega, atraso inferior a um segundo e recuperação em trinta segundos. Não há relógios sincronizados para inferir latência unidirecional.
 
-A rotina de rede pode bloquear temporariamente a aquisição, e a conexão QoS 0 não confirma entrega. Não há persistência histórica no Dashboard, controle privado dos tópicos ou comandos remotos do LED. A revisão registra essas diferenças em relação à proposta original para não apresentar intenções como resultados. Uma evolução física ou uma exigência de segurança obrigatória demandará implementação e novos ensaios.
+A rotina de rede pode bloquear temporariamente a aquisição, e a conexão QoS 0 não confirma entrega. O Dashboard não mantém histórico persistente e não há comando remoto do LED. A conexão atual exige autenticação e TLS; a política de tópicos deve permanecer restrita na conta do provedor. A revisão registra essas diferenças em relação à proposta original para não apresentar intenções como resultados. Durante o ensaio, o gateway público de Internet do Wokwi encerrou uma conexão. A simulação foi reiniciada, recebeu novamente a senha e retomou o envio; não foi validado prazo máximo de recuperação ou disponibilidade contínua.
 
 3.4 Código dados e vídeo de demonstração
 
@@ -198,7 +224,7 @@ O repositório público reúne firmware, componente personalizado, diagrama, flu
 
 Repositório do projeto: https://github.com/LuizFRod/atividade-objetos-inteligentes-ecg
 
-Simulação Wokwi: https://wokwi.com/projects/479896326597353473
+Simulação Wokwi: https://wokwi.com/projects/479900142449265665
 
 Vídeo de demonstração no YouTube não listado: PENDENTE DE INSERÇÃO PELO AUTOR.
 
@@ -208,13 +234,17 @@ Antes da submissão, o autor deve inserir aqui o link real do vídeo, conferir o
 
 Foi implementado e demonstrado um sistema de visualização de ECG sintético com modelo externo de interface do AD8232, ESP32, publicação MQTT pela Internet e Node-RED. A leitura por ADC, o envio de lotes, a atuação por LED e o tratamento de desconexão simulada foram observados. Os dados e as figuras permitem reproduzir e examinar o comportamento dentro do ambiente de simulação.
 
-A execução não comprova aquisição de ECG físico nem as metas quantitativas da proposta inicial. O transporte seguro permanece pendente de infraestrutura própria, e o vídeo deve ser inserido antes da entrega. A contribuição ao ODS 3 é educacional, ao permitir estudar aquisição, disponibilidade e limites de monitoramento conectado. A transição para hardware físico e a aceitação acadêmica do modelo simulado exigem avaliação específica, sem extrapolar os resultados apresentados.
+A execução não comprova aquisição de ECG físico nem as metas quantitativas da proposta inicial. O transporte TLS autenticado foi implantado e demonstrado, com 372 lotes e 9300 valores capturados em uma janela de 60 segundos. O vídeo ainda deve ser inserido antes da entrega. A contribuição ao ODS 3 é educacional, ao permitir estudar aquisição, disponibilidade e limites de monitoramento conectado. A transição para hardware físico e a aceitação acadêmica do modelo simulado exigem avaliação específica, sem extrapolar os resultados apresentados.
 
 5 Referências
 
 ANALOG DEVICES. AD8232 Single Lead Heart Rate Monitor Front End. s.d. Disponível em: https://www.analog.com/en/products/ad8232.html. Acesso em: 5 nov. 2026.
 
 ECLIPSE FOUNDATION. mosquitto.conf man page. s.d. Disponível em: https://mosquitto.org/man/mosquitto-conf-5.html. Acesso em: 5 nov. 2026.
+
+EMQX. Default Authorization. s.d. b. Disponível em: https://docs.emqx.com/en/cloud/latest/deployments/default_authz.html. Acesso em: 5 nov. 2026.
+
+EMQX. Serverless Connection Guide. s.d. a. Disponível em: https://docs.emqx.com/en/cloud/latest/deployments/port_guide_serverless.html. Acesso em: 5 nov. 2026.
 
 ESPRESSIF SYSTEMS. Arduino ESP32 ADC API. s.d. a. Disponível em: https://docs.espressif.com/projects/arduino-esp32/en/latest/api/adc.html. Acesso em: 5 nov. 2026.
 

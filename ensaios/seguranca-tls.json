@@ -1,0 +1,28 @@
+{
+  "data_utc": "2026-11-06T01:09:21.556266+00:00",
+  "broker": "i066e913.ala.us-east-1.emqxsl.com",
+  "porta": 8883,
+  "testes": [
+    {
+      "nome": "MQTT anonimo recusado",
+      "tls": "TLSv1.2",
+      "hostname_validado": true,
+      "cadeia_CA_validada": true,
+      "connack": 4,
+      "resultado": "PASSOU"
+    },
+    {
+      "nome": "Senha propositalmente incorreta recusada",
+      "tls": "TLSv1.2",
+      "hostname_validado": true,
+      "cadeia_CA_validada": true,
+      "connack": 4,
+      "resultado": "PASSOU"
+    },
+    {
+      "nome": "Nome de servidor divergente",
+      "resultado": "PASSOU",
+      "observacao": "O cliente rejeitou certificado cujo nome nao corresponde ao hostname; validacao nao foi desabilitada."
+    }
+  ]
+}
