@@ -1,0 +1,24 @@
+{
+  "name": "AD8232 SIMULADO",
+  "author": "Projeto academico ECG",
+  "pins": [
+    "VCC",
+    "GND",
+    "OUTPUT",
+    "LOP",
+    "LON",
+    "SDN",
+    "DESC",
+    ""
+  ],
+  "controls": [
+    {
+      "id": "bpm",
+      "label": "Frequencia sintetica (BPM)",
+      "type": "range",
+      "min": 30,
+      "max": 180,
+      "step": 1
+    }
+  ]
+}

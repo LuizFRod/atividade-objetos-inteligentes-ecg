@@ -1,0 +1,504 @@
+[
+  {
+    "id": "2f5e91a7ff3f40ca",
+    "type": "tab",
+    "label": "ECG • AD8232 SIMULADO",
+    "disabled": false,
+    "info": "Modelo de interface didatico. Nao representa medicao real ou simulacao eletrica do AD8232. Nova aba independente. Broker publico sem TLS: somente teste."
+  },
+  {
+    "id": "81bea4bde1f74b2f",
+    "type": "mqtt-broker",
+    "name": "ECG TESTE • HiveMQ público",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {}
+  },
+  {
+    "id": "7650026463e740fb",
+    "type": "ui-base",
+    "name": "AD8232 simulado • demonstracao",
+    "path": "/dashboard-ecg-84729",
+    "appIcon": "",
+    "includeClientData": true,
+    "acceptsClientConfig": [],
+    "showPathInSidebar": false,
+    "showPageTitle": true,
+    "navigationStyle": "default",
+    "titleBarStyle": "default",
+    "allowInstall": false
+  },
+  {
+    "id": "f55138aa53fc4e04",
+    "type": "ui-theme",
+    "name": "ECG • tema",
+    "colors": {
+      "surface": "#ffffff",
+      "primary": "#00796b",
+      "bgPage": "#eef3f5",
+      "groupBg": "#ffffff",
+      "groupOutline": "#d9d9e0"
+    },
+    "sizes": {
+      "density": "default",
+      "pagePadding": "12px",
+      "groupGap": "12px",
+      "groupBorderRadius": "4px",
+      "widgetGap": "12px"
+    }
+  },
+  {
+    "id": "51295450891e4932",
+    "type": "ui-page",
+    "name": "AD8232 simulado",
+    "ui": "7650026463e740fb",
+    "path": "/ad8232",
+    "icon": "monitor-heart",
+    "layout": "grid",
+    "theme": "f55138aa53fc4e04",
+    "order": 2,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": 0,
+        "cols": 3
+      },
+      {
+        "name": "Tablet",
+        "px": 576,
+        "cols": 6
+      },
+      {
+        "name": "Desktop",
+        "px": 1024,
+        "cols": 12
+      }
+    ]
+  },
+  {
+    "id": "c1734f17b5e34381",
+    "type": "ui-group",
+    "name": "AD8232 SIMULADO → ADC ESP32 → MQTT",
+    "page": "51295450891e4932",
+    "width": 12,
+    "height": 1,
+    "order": 1,
+    "showTitle": true,
+    "className": "",
+    "visible": true,
+    "disabled": false,
+    "groupType": "default"
+  },
+  {
+    "id": "c68fbf6752724998",
+    "type": "comment",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 420,
+    "y": 60,
+    "wires": [],
+    "name": "AD8232 SIMULADO | GPIO34 ADC | chave: contato dos eletrodos | broker público: teste",
+    "info": "Importar em nova aba. Dashboard: /dashboard-ecg-84729/ad8232. Pause a versão anterior do Wokwi antes de iniciar esta. Chave conectada ao GND = conectado; ligada a 3V3 = desconectado. Não representa medição real de ECG. Ao desconectar, o gráfico é limpo e deixa de receber pontos até reconectar."
+  },
+  {
+    "id": "17e7e79143804e7e",
+    "type": "mqtt in",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 170,
+    "y": 160,
+    "wires": [
+      [
+        "16477e03059c42c4",
+        "7fce7544b28148a4"
+      ]
+    ],
+    "name": "ECG • receber tópico exato",
+    "topic": "aula/ecg/esp32-84729/amostras",
+    "qos": "0",
+    "datatype": "utf8",
+    "broker": "81bea4bde1f74b2f",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0
+  },
+  {
+    "id": "16477e03059c42c4",
+    "type": "debug",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 460,
+    "y": 120,
+    "wires": [],
+    "name": "1 • MQTT recebido (mensagem completa)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full"
+  },
+  {
+    "id": "7fce7544b28148a4",
+    "type": "function",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 470,
+    "y": 200,
+    "wires": [
+      [
+        "358fa33c86754a21"
+      ],
+      [
+        "7d2aa36a39c54104"
+      ]
+    ],
+    "name": "Validar lote e contato simulado",
+    "func": "// indice é preservado como metadado: não assume contador de lote ou de amostra.\nfunction invalid(reason) { node.error('Lote ECG inválido: ' + reason, msg); return null; }\nlet p;\ntry { p = typeof msg.payload === 'string' ? JSON.parse(msg.payload) : msg.payload; }\ncatch (e) { return invalid('JSON malformado'); }\nif (!p || typeof p !== 'object' || Array.isArray(p)) return invalid('esperado objeto');\nif (p.dispositivo !== 'esp32-84729') return invalid('dispositivo deve ser esp32-84729');\nif (!Number.isSafeInteger(p.indice) || p.indice < 0) return invalid('indice deve ser inteiro >= 0');\nif (typeof p.intervalo_us !== 'number' || !Number.isFinite(p.intervalo_us) || p.intervalo_us <= 0 || p.intervalo_us > 1000000) return invalid('intervalo_us deve ser > 0 e <= 1000000');\nif (!Object.prototype.hasOwnProperty.call(p, 'eletrodos')) return invalid('eletrodos ausente');\nif (!Array.isArray(p.amostras) || p.amostras.length < 1 || p.amostras.length > 4096 || !p.amostras.every(v => typeof v === 'number' && Number.isFinite(v))) return invalid('amostras deve conter de 1 a 4096 números finitos');\nif (p.eletrodos !== 'conectados' && p.eletrodos !== 'desconectados' && !(p.eletrodos && p.eletrodos.origem === 'teste Node-RED')) return invalid('estado de eletrodos desconhecido');\nconst now = Date.now();\nflow.set('ecgLastRx', now);\nflow.set('ecgTimeoutMs', Math.max(10000, p.amostras.length * p.intervalo_us / 1000 * 3));\nif (p.eletrodos === 'desconectados') {\n  const first = !context.get('leadOff');\n  context.set('leadOff', true);\n  context.set('lastPoint', null);\n  node.status({fill:'red', shape:'ring', text:'eletrodos simulados desconectados'});\n  return [first ? {payload:[], topic:p.dispositivo} : null,\n    {payload:'AD8232 SIMULADO | eletrodos desconectados | LED aceso | traçado suspenso'}];\n}\ncontext.set('leadOff', false);\nconst dt = p.intervalo_us / 1000;\nconst previous = context.get('lastPoint');\n// Primeira amostra ancorada à chegada. Gaps de rede permanecem visíveis.\nlet start = now - (p.amostras.length - 1) * dt;\nif (Number.isFinite(previous)) start = Math.max(start, previous + dt);\nconst points = p.amostras.map((y, i) => ({x: start + i * dt, y}));\ncontext.set('lastPoint', points[points.length - 1].x);\nflow.set('ecgLastRx', now);\nflow.set('ecgTimeoutMs', Math.max(10000, p.amostras.length * dt * 3));\nnode.status({fill:'green', shape:'dot', text:p.amostras.length + ' amostras | índice ' + p.indice});\nreturn [\n {topic:p.dispositivo, payload:points, action:'append'},\n {payload:'Dispositivo: ' + p.dispositivo + ' | índice: ' + p.indice + ' | ' + p.amostras.length + ' amostras | ' + (1000000 / p.intervalo_us).toFixed(1) + ' Hz | eletrodos: ' + JSON.stringify(p.eletrodos)}\n];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "context.set('lastPoint', null); flow.set('ecgLastRx', null); flow.set('ecgTimeoutMs', 10000); context.set('leadOff', false);",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "358fa33c86754a21",
+    "type": "ui-chart",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 820,
+    "y": 160,
+    "wires": [
+      []
+    ],
+    "name": "ECG em tempo real",
+    "group": "c1734f17b5e34381",
+    "order": 1,
+    "width": 12,
+    "height": 6,
+    "label": "ECG sintético • leitura do ADC GPIO34",
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "Horário reconstruído no receptor",
+    "xAxisProperty": "x",
+    "xAxisPropertyType": "property",
+    "xAxisType": "time",
+    "xAxisFormat": "{HH}:{mm}:{ss}",
+    "xAxisFormatType": "custom",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "Contagens do ADC simulado (sem calibração em mV)",
+    "yAxisProperty": "y",
+    "yAxisPropertyType": "property",
+    "ymin": "",
+    "ymax": "",
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "circle",
+    "pointRadius": 0,
+    "showLegend": true,
+    "removeOlder": 10,
+    "removeOlderUnit": "1",
+    "removeOlderPoints": "5000",
+    "colors": [
+      "#00796b"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "className": "",
+    "interpolation": "linear"
+  },
+  {
+    "id": "7d2aa36a39c54104",
+    "type": "ui-text",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 830,
+    "y": 240,
+    "wires": [],
+    "name": "Último lote válido / erro",
+    "group": "c1734f17b5e34381",
+    "order": 4,
+    "width": 12,
+    "height": 1,
+    "label": "Último lote válido / erro",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "style": false,
+    "font": "Helvetica",
+    "fontSize": 14,
+    "color": "#333333",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg"
+  },
+  {
+    "id": "401d5d2cdfe6416d",
+    "type": "status",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 170,
+    "y": 320,
+    "wires": [
+      [
+        "2412dadbeb0f481d",
+        "9f51b501c59a47f4"
+      ]
+    ],
+    "name": "Status de MQTT IN e OUT",
+    "scope": [
+      "17e7e79143804e7e",
+      "d1ad608e45dd472d"
+    ]
+  },
+  {
+    "id": "2412dadbeb0f481d",
+    "type": "function",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 470,
+    "y": 320,
+    "wires": [
+      [
+        "b40737bec5064eae"
+      ]
+    ],
+    "name": "Exibir conexão MQTT",
+    "func": "const s = msg.status || {}; const t = s.text || ''; const translated = t.includes('disconnected') ? 'desconectado' : t.includes('connected') ? 'conectado' : t.includes('connecting') ? 'conectando' : t; msg.payload = (s.source ? s.source.name + ': ' : '') + (translated || 'Sem status'); return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "b40737bec5064eae",
+    "type": "ui-text",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 840,
+    "y": 320,
+    "wires": [],
+    "name": "Conexão MQTT (último evento)",
+    "group": "c1734f17b5e34381",
+    "order": 2,
+    "width": 12,
+    "height": 1,
+    "label": "Conexão MQTT (último evento)",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "style": false,
+    "font": "Helvetica",
+    "fontSize": 14,
+    "color": "#333333",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg"
+  },
+  {
+    "id": "9f51b501c59a47f4",
+    "type": "debug",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 470,
+    "y": 380,
+    "wires": [],
+    "name": "2 • Status MQTT",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full"
+  },
+  {
+    "id": "ddc469b1ff0a4113",
+    "type": "inject",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 190,
+    "y": 460,
+    "wires": [
+      [
+        "d1ad608e45dd472d"
+      ]
+    ],
+    "name": "TESTE MANUAL • 250 amostras / 1 s",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "aula/ecg/esp32-84729/amostras",
+    "payload": "{\"dispositivo\":\"esp32-84729\",\"indice\":0,\"intervalo_us\":4000,\"eletrodos\":{\"origem\":\"teste Node-RED\",\"estado\":\"simulado\"},\"amostras\":[2048,2050,2052,2053,2055,2057,2059,2060,2062,2064,2065,2067,2069,2070,2072,2074,2075,2077,2079,2080,2082,2083,2085,2087,2088,2090,2092,2095,2097,2101,2105,2111,2118,2127,2138,2151,2166,2182,2200,2219,2237,2254,2269,2281,2288,2291,2290,2284,2273,2260,2244,2228,2210,2194,2179,2166,2154,2145,2137,2132,2127,2124,2122,2121,2120,2119,2118,2118,2118,2117,2117,2116,2116,2116,2115,2115,2114,2113,2113,2112,2111,2111,2110,2109,2108,2107,2106,2105,2103,2099,2088,2064,2019,1957,1901,1885,1953,2171,2598,3111,3352,3097,2570,2125,1873,1751,1703,1714,1771,1853,1934,1996,2034,2054,2062,2064,2064,2062,2061,2059,2058,2056,2055,2053,2052,2051,2050,2049,2049,2049,2049,2049,2050,2052,2053,2056,2059,2063,2068,2073,2080,2087,2095,2104,2114,2125,2136,2148,2161,2174,2187,2200,2213,2226,2238,2250,2260,2269,2277,2283,2288,2291,2292,2291,2288,2283,2276,2268,2258,2247,2234,2221,2207,2192,2177,2162,2146,2131,2117,2103,2090,2077,2065,2055,2045,2036,2027,2020,2014,2008,2004,1999,1996,1993,1991,1989,1987,1986,1985,1985,1984,1984,1984,1985,1985,1985,1986,1987,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1998,1999,2000,2001,2003,2004,2005,2007,2008,2010,2011,2013,2014,2016,2017,2019,2021,2022,2024,2026,2027,2029,2031,2032,2034,2036,2037,2039,2041,2043,2044,2046]}",
+    "payloadType": "json"
+  },
+  {
+    "id": "d1ad608e45dd472d",
+    "type": "mqtt out",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 540,
+    "y": 460,
+    "wires": [],
+    "name": "TESTE → mesmo tópico ECG",
+    "topic": "aula/ecg/esp32-84729/amostras",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "81bea4bde1f74b2f"
+  },
+  {
+    "id": "e43acfb4333846b8",
+    "type": "inject",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 170,
+    "y": 560,
+    "wires": [
+      [
+        "d027364ea6004eba"
+      ]
+    ],
+    "name": "Verificar recepção a cada 2 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 1,
+    "payload": "",
+    "payloadType": "date"
+  },
+  {
+    "id": "d027364ea6004eba",
+    "type": "function",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 470,
+    "y": 560,
+    "wires": [
+      [
+        "f2a876b53f364cbd"
+      ]
+    ],
+    "name": "Detectar ausência de lotes",
+    "func": "const last = flow.get('ecgLastRx'); const age = last ? Date.now() - last : null; const limit = flow.get('ecgTimeoutMs') || 10000; msg.payload = age === null ? 'Aguardando primeira mensagem' : (age > limit ? 'SEM DADOS RECENTES' : 'Recebendo mensagens MQTT') + ' | último há ' + (age / 1000).toFixed(1) + ' s'; return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "f2a876b53f364cbd",
+    "type": "ui-text",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 830,
+    "y": 560,
+    "wires": [],
+    "name": "Recebimento de dados",
+    "group": "c1734f17b5e34381",
+    "order": 3,
+    "width": 12,
+    "height": 1,
+    "label": "Recebimento de dados",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "style": false,
+    "font": "Helvetica",
+    "fontSize": 14,
+    "color": "#333333",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg"
+  },
+  {
+    "id": "d2fac230b5624686",
+    "type": "catch",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 170,
+    "y": 660,
+    "wires": [
+      [
+        "8114b350d4eb47b6",
+        "4a2cdf6bacda4739"
+      ]
+    ],
+    "name": "Erros de validação / MQTT",
+    "scope": [
+      "7fce7544b28148a4",
+      "17e7e79143804e7e",
+      "d1ad608e45dd472d"
+    ],
+    "uncaught": false
+  },
+  {
+    "id": "8114b350d4eb47b6",
+    "type": "function",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 470,
+    "y": 640,
+    "wires": [
+      [
+        "7d2aa36a39c54104"
+      ]
+    ],
+    "name": "Exibir erro",
+    "func": "msg.payload = msg.error ? msg.error.message : 'Erro no fluxo ECG'; return msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": []
+  },
+  {
+    "id": "4a2cdf6bacda4739",
+    "type": "debug",
+    "z": "2f5e91a7ff3f40ca",
+    "x": 470,
+    "y": 700,
+    "wires": [],
+    "name": "3 • Erros ECG",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full"
+  }
+]

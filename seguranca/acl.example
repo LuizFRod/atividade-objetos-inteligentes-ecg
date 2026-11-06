@@ -1,0 +1,5 @@
+# Usuarios separados, com senhas individuais definidas no servidor.
+user esp32-84729
+ topic write aula/ecg/esp32-84729/amostras
+user painel-ecg
+ topic read aula/ecg/esp32-84729/amostras

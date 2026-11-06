@@ -1,0 +1,13 @@
+# MODELO DE IMPLANTACAO — NAO FOI ATIVADO NO ENSAIO.
+# Ajustar caminhos e permissoes em servidor sob controle do autor.
+listener 8883
+protocol mqtt
+allow_anonymous false
+certfile /etc/mosquitto/certs/fullchain.pem
+keyfile /etc/mosquitto/certs/privkey.pem
+tls_version tlsv1.2
+password_file /etc/mosquitto/passwd
+acl_file /etc/mosquitto/acl
+persistence true
+persistence_location /var/lib/mosquitto/
+log_dest stdout
