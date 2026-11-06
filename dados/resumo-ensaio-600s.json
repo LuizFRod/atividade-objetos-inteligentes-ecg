@@ -1,0 +1,11 @@
+{
+  "inicio_utc": "2026-11-06T00:27:20.379563+00:00",
+  "duracao_receptor_s": 600.346,
+  "lotes_recebidos": 1682,
+  "amostras_recebidas": 42050,
+  "regressoes_indice": 0,
+  "lacunas_indices_observadas": 1143,
+  "nota": "Coleta no receptor por tempo de relogio. Indices e frequencia sao do tempo simulado. Lacunas incluem efeitos de aquisicao e transporte; nao medem taxa de entrega isoladamente. Mais de uma instancia publicadora pode invalidar comparacoes.",
+  "minimo_contagens": 1147,
+  "maximo_contagens": 2166
+}

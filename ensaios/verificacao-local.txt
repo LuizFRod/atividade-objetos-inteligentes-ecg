@@ -1,0 +1,14 @@
+Verificação local em 5 de novembro de 2026
+
+Fluxo Node-RED: JSON válido, IDs únicos, referências internas resolvidas.
+Função receptora: conectado, desconectado, reconexão, limpeza do gráfico e dados inválidos verificados.
+Montagem: endpoints e pinos do custom chip conferidos; OUTPUT -> GPIO34; LOP/LON -> GPIO32/33; LED GPIO2.
+Firmware demonstrado: compilado e executado no Wokwi na etapa funcional.
+Coletor Python: sintaxe compilada.
+Dados curtos: 10 mensagens MQTT recebidas, 25 valores por lote, total de 250 valores sintéticos.
+Credenciais: nenhum arquivo secrets.h real incluído; modelos contêm valores vazios.
+TLS: configuração e variante preparadas, ainda sem implantação ou teste com broker próprio.
+
+O teste funcional não equivale a validação clínica nem a comprovação das metas quantitativas da proposta.
+
+Variante TLS: compilada no Wokwi com as definições vazias do exemplo incorporadas ao sketch. Execução indicou TLS pendente e MQTT bloqueado. Certificado e autenticação com provedor real não ensaiados.

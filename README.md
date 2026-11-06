@@ -4,6 +4,7 @@ Projeto acadêmico de Luiz Felipe Rodrigues, Universidade Presbiteriana Mackenzi
 
 - [Executar no Wokwi](https://wokwi.com/projects/479896326597353473)
 - [Repositório](https://github.com/LuizFRod/atividade-objetos-inteligentes-ecg)
+- [Artigo em PDF](documentacao/artigo-ecg-revisado.pdf)
 - [Texto do artigo](documentacao/artigo-texto.md)
 - **Vídeo YouTube não listado: pendente de gravação e inclusão pelo autor.**
 
@@ -41,7 +42,7 @@ O LED GPIO2 usa resistor de 220 Ω: desconexão tem prioridade e mantém o LED a
 
 ## Evidências e limites
 
-Foram testados compilação, leitura ADC, recepção MQTT, gráfico e desconexão/reconexão de contato. As mensagens em `dados/` são de simulação, não de pacientes. A coleta curta contém dez lotes, totalizando 250 valores. O arquivo do ensaio estendido registra seu próprio tempo, contagem e observações.
+Foram testados compilação, leitura ADC, recepção MQTT, gráfico e desconexão/reconexão de contato. As mensagens em `dados/` são de simulação, não de pacientes. A coleta curta contém dez lotes, totalizando 250 valores. O ensaio estendido registrou 1682 lotes e 42050 valores em 600,346 s do receptor; seu resumo e dados completos comprimidos estão em dados/. Foram observadas 1143 lacunas positivas de índices, sem inferir perda de rede isoladamente.
 
 A taxa de 250 Hz é configurada, não comprovada como aquisição contínua sem perdas. Não se demonstraram 99% de entrega, latência inferior a 1 s ou reconexão em 30 s. A simulação analógica é simplificada, sem calibração para mV de ECG.
 
