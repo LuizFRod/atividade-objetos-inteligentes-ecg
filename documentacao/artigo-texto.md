@@ -3,6 +3,8 @@ UNIVERSIDADE PRESBITERIANA MACKENZIE
 Faculdade de Computação e Informática
 Objetos Inteligentes Conectados
 
+Sistema IoT de visualização de ECG sintético com ESP32 e modelo simulado do AD8232
+
 Luiz Felipe Rodrigues
 Universidade Presbiteriana Mackenzie
 São Paulo SP Brasil
@@ -25,6 +27,10 @@ A integração entre entradas analógicas, processamento embarcado e comunicaç�
 
 O AD8232 físico é um circuito de condicionamento de biopotenciais, com recursos de amplificação, filtragem e detecção de desconexão de eletrodos (ANALOG DEVICES, s.d.). O componente criado neste trabalho representa apenas sua interface funcional de saída e estado. O sinal de teste é produzido matematicamente no próprio componente simulado, e o ESP32 lê sua saída. Essa distinção impede interpretar o gráfico como registro cardíaco real.
 
+Como trabalho relacionado, McSharry et al. (2003) desenvolveram o ECGSYN, gerador de ECG sintético baseado em um modelo dinâmico com três equações diferenciais e parâmetros ajustáveis de frequência e morfologia. O presente demonstrador utiliza uma soma simplificada de gaussianas, sem implementar o ECGSYN ou validar equivalência fisiológica. Seu foco é a integração entre ADC, sinalização e transporte MQTT, enquanto o trabalho relacionado trata da geração de sinais sintéticos para estudos de processamento.
+
+Na prototipagem de aquisição física, a SparkFun Electronics (s.d. a) disponibiliza um módulo de monitoramento cardíaco baseado no AD8232 e documentação de hardware. Esse projeto fornece uma referência de implementação física. Neste trabalho, a interface do módulo é representada por um componente simulado externo ao firmware, e o caminho até a aplicação receptora é documentado com MQTT pela Internet. A comparação delimita a contribuição didática e não estabelece equivalência entre simulação e aquisição real.
+
 1.1 Objetivos e relação com o ODS 3
 
 O objetivo geral é demonstrar a cadeia módulo de ECG simulado, ADC do ESP32, MQTT pela Internet, visualização e sinalização por LED. Os objetivos específicos são realizar a leitura de uma saída analógica externa ao firmware, transmitir lotes JSON, apresentar a curva no navegador, representar a perda de contato e documentar o código e os dados de ensaio.
@@ -34,6 +40,8 @@ O trabalho se relaciona tematicamente ao ODS 3 Saúde e Bem Estar, especialmente
 1.2 Delimitação da implementação
 
 A versão executada não utiliza AD8232 físico, eletrodos humanos ou montagem em protoboard. A proposta física anterior é mantida como possibilidade de extensão e documentada no Apêndice A. As seções seguintes descrevem a simulação efetivamente realizada. A aceitação do modelo funcional como sensor simulado para avaliação depende da orientação da disciplina.
+
+
 
 Figura 1. Arquitetura da demonstração simulada e caminho das mensagens. A comunicação com o broker ocorre pela Internet; o Dashboard é servido pelo Node-RED local. Fonte: elaboração própria, 2026.
 
@@ -45,21 +53,7 @@ Foi utilizada a placa ESP32 DevKitC V4 disponível no Wokwi. O Wi-Fi integrado p
 
 O firmware foi escrito em C++ com Arduino ESP32, WiFi.h, WiFiClientSecure, sincronização NTP e PubSubClient. O componente externo foi escrito em C por meio da Custom Chips API do Wokwi, que permite definir pinos, temporizadores e controles de modelos personalizados (WOKWI, s.d. a). A aplicação receptora utiliza Node-RED 5.0.9 e o pacote @flowfuse/node-red-dashboard. Os códigos, arquivos de montagem e instruções de reprodução constam no repositório indicado na seção 3.4.
 
-Elemento | Quantidade | Papel na versão executada
 
-ESP32 DevKitC V4 simulado | 1 | Leitura ADC, entradas digitais, LED e cliente MQTT
-
-AD8232 SIMULADO | 1 | Modelo de interface com geração sintética e estados LOP e LON
-
-LED vermelho e resistor de 220 ohms | 1 de cada | Atuação visual no GPIO2
-
-Chave deslizante de contato | 1 | Controle da entrada didática DESC
-
-Wokwi e bibliotecas Arduino | Software | Compilação e execução do firmware e modelo
-
-Node-RED e FlowFuse Dashboard | Software | Recepção, validação e visualização
-
-Computador e acesso à Internet | Apoio | Editor, receptor MQTT e navegador
 
 2.2 Modelo do sensor e geração do sinal
 
@@ -80,6 +74,8 @@ A chave ligada ao GND mantém DESC baixo e sinaliza contato normal. Ligada a 3V3
 
 OUTPUT foi ligado ao GPIO34, e LOP e LON aos GPIO32 e GPIO33. SDN foi ligado a 3V3. O LED foi conectado ao GPIO2 por resistor de 220 ohms, com cátodo no GND. A chave seleciona GND ou 3V3 para DESC. O circuito efetivo está no arquivo diagram.json; o componente é definido em ad8232.chip.json e ad8232.chip.c. A Figura 2 identifica as conexões e distingue a entrada de teste dos pinos equivalentes ao módulo físico.
 
+
+
 Figura 2. Esquema funcional das ligações do demonstrador Wokwi. Os blocos representam terminais nomeados, sem escala física. A entrada DESC é exclusiva da simulação. Fonte: elaboração própria, 2026.
 
 A atualização substitui a descrição de LED no GPIO25 e resistor de 330 ohms da proposta anterior pela montagem executada no GPIO2 com 220 ohms. A amplificação e filtragem do componente físico permanecem como fundamentação e possibilidade de extensão, sem serem apresentadas como ensaio realizado.
@@ -92,39 +88,19 @@ O loop acompanha Wi-Fi e MQTT e tenta reconectar em intervalos de cinco segundos
 
 A publicação e a reconexão ocorrem na mesma rotina da aquisição e podem introduzir atrasos. Portanto, 250 Hz é a taxa configurada, não uma taxa contínua sem perdas comprovada. O contador de temporização não contabiliza todos os descartes nem separa perdas de aquisição, publicação e rede. Esta versão não implementa o buffer circular de 500 amostras ou tarefas concorrentes previstos originalmente.
 
-Prioridade | Condição observada pelo firmware | Saída do LED
 
-1 | LOP ou LON em nível alto | Aceso continuamente
 
-2 | Contato normal e MQTT desconectado | Alternância a cada 500 ms
+O limiar 2000 foi adotado para indicar visualmente picos do sinal sintético nesta simulação. Não corresponde a limiar clínico, detecção validada de pico R ou cálculo de frequência cardíaca. Foi acrescentado um modo temporário de ensaio do LED por comando MQTT, descrito na seção 2.7. A retomada após reconexão do contato ocorre no lote seguinte, sem a janela de estabilização de dois segundos proposta para um sensor físico.
 
-3 | Contato normal e MQTT conectado | Aceso quando ADC > 2000; apagado nos demais valores
 
-O limiar 2000 foi adotado para indicar visualmente picos do sinal sintético nesta simulação. Não corresponde a limiar clínico, detecção validada de pico R ou cálculo de frequência cardíaca. Não há comando remoto MQTT para testar o LED nesta versão. A retomada após reconexão do contato ocorre no lote seguinte, sem a janela de estabilização de dois segundos proposta para um sensor físico.
 
 Figura 3. Fluxograma do modelo externo, leitura pelo ESP32, atuação e processamento no receptor. A aquisição e a rotina de rede compartilham o loop. Fonte: elaboração própria, 2026.
 
 2.5 Comunicação MQTT e processamento no Node RED
 
-A versão final utiliza MQTT 3.1.1 por Wi-Fi e Internet com EMQX Cloud Serverless, host i066e913.ala.us-east-1.emqxsl.com e porta 8883, com TLS e autenticação. Os ensaios iniciais no HiveMQ público, porta 1883 sem TLS, foram mantidos como histórico e não comprovam o transporte seguro atual. O tópico único de amostras é aula/ecg/esp32-84729/amostras. As publicações utilizam QoS 0 e retain desativado. Não foram implementados tópicos separados de estado e comando, Last Will ou confirmação de execução de comandos. O uso de publicação e assinatura segue a organização do protocolo MQTT (OASIS, 2014).
+A versão final utiliza MQTT 3.1.1 por Wi-Fi e Internet com EMQX Cloud Serverless, host i066e913.ala.us-east-1.emqxsl.com e porta 8883, com TLS e autenticação. Os ensaios iniciais no HiveMQ público, porta 1883 sem TLS, foram mantidos como histórico e não comprovam o transporte seguro atual. O tópico único de amostras é aula/ecg/esp32-84729/amostras. As publicações utilizam QoS 0 e retain desativado. Os eventos de ensaio e comandos utilizam o mesmo tópico, distinguindo-se pelo conteúdo e pelo identificador da solicitação. Há confirmação do comando de LED após a escrita no GPIO; não foram implementados tópicos separados ou Last Will. O uso de publicação e assinatura segue a organização do protocolo MQTT (OASIS, 2014).
 
-Campo JSON | Significado
 
-dispositivo | Identificador esp32-84729
-
-indice | Índice da primeira amostra do lote
-
-intervalo_us | Intervalo nominal entre amostras, igual a 4000
-
-eletrodos | conectados ou desconectados segundo a chave
-
-origem | Identificação ad8232-simulado
-
-transporte e sessao | mqtts e identificador desta execução
-
-perdidas_temporizacao | Contador de períodos perdidos na rotina de aquisição
-
-amostras | Vetor de 25 contagens do ADC simulado
 
 O nó MQTT IN entrega o payload ao Debug e à função de validação. A função verifica identificação, índice, intervalo e valores numéricos, convertendo as amostras em pontos x e y. O horário é reconstruído no receptor a partir da chegada do lote e do intervalo informado, com avanço crescente entre lotes. O índice não é utilizado para reordenar ou recuperar mensagens, e nem todas as lacunas entre lotes são representadas explicitamente no traçado.
 
@@ -148,43 +124,39 @@ Na etapa inicial sem TLS também foi executada coleta por aproximadamente dez mi
 
 Após a migração, o Node-RED registrou mensagens recebidas por sua conexão MQTT TLS autenticada durante uma janela configurada de 60 segundos. Os horários UTC de chegada delimitam o intervalo observado entre primeiro e último lote. Foram registrados sessão, índices e valores em JSONL e CSV, sem credenciais. Um script independente testou recusa de login anônimo, senha incorreta e hostname divergente; os relatórios constam no repositório.
 
+2.7 Ensaio complementar de tempo de resposta
+
+Foram realizadas quatro medidas para a entrada analógica do modelo AD8232 e quatro para o LED externo. O início da medida do sensor é a leitura do ADC sinalizada pelo firmware, e o fim é a entrada do respectivo evento no nó MQTT IN do Node-RED. No atuador, o início é o despacho do comando pelo Node-RED e o fim é o registro imediatamente após digitalWrite no GPIO2. A confirmação comprova a aplicação lógica no pino simulado, sem fotometria do LED. O ensaio do sensor publica a leitura imediatamente, separado do lote normal de 25 valores; portanto, não mede a espera completa de formação do lote nem a renderização do gráfico.
+
+Os comandos têm formato ENSAIO|operação|identificador|valor, usam QoS 0 e retain desativado. CLOCK solicita uma referência temporal; SENSOR seleciona a próxima leitura ADC; LED aplica 0 ou 1; AUTO restaura o funcionamento normal. O LED remoto expira em quinze segundos do relógio simulado, e a desconexão dos eletrodos permanece prioritária. O evento de resposta contém tipo, identificador, sessão, valor e evento_us do relógio monotônico do ESP32. O receptor ignora esses eventos na curva de ECG. A autorização do usuário do ESP32 precisa permitir também Subscribe no tópico exato de amostras, além do Publish existente.
+
+Todos os envios e recebimentos são marcados pelo relógio do mesmo Node-RED. Cada medida é cercada por sondas CLOCK na mesma sessão. Uma transformação afim local converte o tempo do simulador para o computador a partir dos pontos médios de envio e recebimento das sondas extremas. Uma sonda intermediária verifica o resíduo dessa aproximação. A incerteza inclui metade do tempo de ida e volta interpolado das sondas, o resíduo intermediário e um milissegundo de resolução. O intervalo é limitado pela ordem causal entre solicitação e resposta. O tempo apresentado é o ponto médio desse intervalo; a média aritmética considera as quatro medidas de cada elemento. A conversão pressupõe variação aproximadamente afim do relógio nessa janela curta; assimetria de rede e variações rápidas do simulador limitam sua precisão. O tempo de ida e volta é medido diretamente no único relógio do receptor e é informado como dado complementar, sem ser confundido com a latência unidirecional.
+
 3 Resultados
 
 3.1 Integração e comportamento observado
 
 A demonstração apresentou leituras variáveis do ADC GPIO34, publicação MQTT e gráfico com ciclos da forma de onda sintética. A Figura 4 mostra a execução conectada ao broker TLS. Os metadados indicam dispositivo, índice da primeira amostra, quantidade e taxa nominal. A forma de onda resulta do modelo matemático externo, sem captação de ECG humano.
 
+
+
 Figura 4. Dashboard durante recepção de lotes do ESP32 pelo EMQX com TLS e apresentação do sinal sintético lido pelo ADC. O tempo é reconstruído no receptor e os valores verticais são contagens do ADC simulado. Fonte: captura da execução, 2026.
 
 Ao acionar a chave, o modelo elevou LOP e LON; o firmware registrou desconectados e manteve o LED aceso. A aplicação suspendeu a inclusão dos valores e exibiu a condição de contato interrompido, conforme a Figura 5. O restabelecimento da chave retomou a aquisição aceita pelo receptor e o traçado.
+
+
 
 Figura 5. Painel após desconexão simulada na versão TLS: a série anterior é substituída por ausência de medição e a conexão MQTT permanece indicada separadamente. Fonte: captura da execução, 2026.
 
 3.2 Montagem e dados capturados
 
+
+
 Figura 6. Montagem no Wokwi registrada na etapa inicial, com o bloco AD8232 SIMULADO e a condição de desconexão. A montagem elétrica foi mantida na migração TLS; esta imagem não é evidência de criptografia. O esquema nomeado completo está na Figura 2 e em diagram.json. Fonte: captura da execução, 2026.
 
-Observação | Resultado documentado
 
-Coleta histórica sem TLS | 10 lotes e 250 valores
 
-Comprimento observado | 25 amostras por lote
 
-Intervalo declarado | 4000 microssegundos
-
-Taxa nominal correspondente | 250 Hz
-
-Menor e maior valor no conjunto curto | 1147 e 2166 contagens
-
-Sequência no conjunto curto | Sem lacunas entre os dez lotes capturados
-
-Coleta histórica sem TLS por | 600.346 segundos no receptor
-
-Lotes e valores na coleta estendida | 1682 lotes e 42050 valores
-
-Regressões de índice observadas | 0
-
-Lacunas positivas entre índices | 1143
 
 Os valores mínimo e máximo descrevem somente o conjunto curto capturado. Não constituem faixa garantida, calibração ou amplitude cardíaca. A sequência sem lacunas nesse recorte não permite concluir entrega de 99% para uma sessão mais longa. O contador interno e os índices devem ser interpretados junto aos dados e às condições do simulador.
 
@@ -192,35 +164,33 @@ A coleta estendida registrou a sequência no receptor e as lacunas positivas de 
 
 3.2.1 Comunicação segura e testes de acesso
 
-Verificação na versão TLS | Resultado observado
 
-Publicação do ESP32 e recepção no painel | Handshake autenticado e lotes recebidos
-
-Janela configurada / intervalo primeiro ao último lote | 60 s / 59.834 s
-
-Lotes e valores recebidos | 372 lotes / 9300 valores
-
-Sessões / regressões / posições ausentes entre lotes | 1 / 0 / 352
-
-MQTT anônimo e senha propositalmente incorreta | Ambos recusados com CONNACK 4
-
-Hostname divergente do certificado | Rejeitado pelo cliente TLS
-
-Teste manual inject → MQTT OUT → broker → MQTT IN | 250 valores recebidos no gráfico
 
 O teste independente negociou TLS 1.2 com CA e hostname verificados. O serial do ESP32 confirmou autenticação e publicação; a coleta do Node-RED registrou os lotes da mesma sessão. As 352 posições ausentes entre lotes não isolam perda de rede. A janela segura é distinta do ensaio histórico de dez minutos e não o substitui como teste prolongado. Os resultados não comprovam disponibilidade contínua, desempenho clínico ou uma auditoria integral das permissões de tópicos.
 
+
+
 Figura 7. Teste manual isolado: lote de 250 valores retornou pelo broker com TLS. O campo eletrodos identifica teste Node-RED; estes valores não pertencem à coleta de ADC do ESP32. Fonte: captura da execução, 2026.
+
+3.2.2 Tempos de resposta do sensor e do atuador
+
+A Tabela de tempos apresenta as oito medidas efetivamente registradas nesta execução. Os intervalos expressam a incerteza da conversão entre relógios, sob a hipótese de evolução aproximadamente afim na janela local. Os arquivos eventos.json, medidas.csv e resumo.json e o programa ensaios/medir_tempos.py permitem auditar os registros. O valor do sensor corresponde a contagens brutas do ADC; no LED, 0 indica desligado e 1 indica ligado.
+
+
+
+Figura 8. Quatro medidas por elemento e médias dos tempos estimados. As barras indicam os intervalos de incerteza temporal; os resultados pertencem a uma sessão simulada, com MQTT sobre TLS. Fonte: elaboração própria com os registros do ensaio, 2026.
+
+Os tempos são relativos à integração simulada ensaiada e não representam o atraso de um AD8232 físico, de um broker em qualquer condição ou de uma aplicação clínica. A amostra de quatro medidas por elemento atende ao tamanho solicitado para o ensaio, mas não permite caracterizar percentis, disponibilidade contínua ou garantia de prazo. A ação do LED foi confirmada pelo firmware após a escrita no GPIO na simulação; não foi medida a resposta luminosa de um componente físico.
 
 3.3 Discussão das limitações
 
-O resultado confirma uma cadeia funcional simulada de leitura analógica, transporte e atuação. O modelo não reproduz o condicionamento elétrico do AD8232 nem verifica contato com pessoas. Também não valida o uso em diagnóstico. O ensaio não comprovou as metas anteriores de pelo menos 99% de entrega, atraso inferior a um segundo e recuperação em trinta segundos. Não há relógios sincronizados para inferir latência unidirecional.
+O resultado confirma uma cadeia funcional simulada de leitura analógica, transporte e atuação. O modelo não reproduz o condicionamento elétrico do AD8232 nem verifica contato com pessoas. Também não valida o uso em diagnóstico. O ensaio não comprovou as metas anteriores de pelo menos 99% de entrega, atraso inferior a um segundo e recuperação em trinta segundos. O ensaio complementar da seção 3.2.2 estima os tempos entre extremidades com conversão local entre relógios e apresenta os intervalos de incerteza; ele não equivale a uma prova geral da meta anterior de latência.
 
-A rotina de rede pode bloquear temporariamente a aquisição, e a conexão QoS 0 não confirma entrega. O Dashboard não mantém histórico persistente e não há comando remoto do LED. A conexão atual exige autenticação e TLS; a política de tópicos deve permanecer restrita na conta do provedor. A revisão registra essas diferenças em relação à proposta original para não apresentar intenções como resultados. Durante o ensaio, o gateway público de Internet do Wokwi encerrou uma conexão. A simulação foi reiniciada, recebeu novamente a senha e retomou o envio; não foi validado prazo máximo de recuperação ou disponibilidade contínua.
+A rotina de rede pode bloquear temporariamente a aquisição, e a conexão QoS 0 não confirma entrega. O Dashboard não mantém histórico persistente e o comando remoto do LED foi acrescentado apenas para ensaio, com expiração automática. A conexão atual exige autenticação e TLS; a política de tópicos deve permanecer restrita na conta do provedor. A revisão registra essas diferenças em relação à proposta original para não apresentar intenções como resultados. Durante o ensaio, o gateway público de Internet do Wokwi encerrou uma conexão. A simulação foi reiniciada, recebeu novamente a senha e retomou o envio; não foi validado prazo máximo de recuperação ou disponibilidade contínua.
 
 3.4 Código dados e vídeo de demonstração
 
-O repositório público reúne firmware, componente personalizado, diagrama, fluxo Node-RED, dados capturados, script de coleta, figuras e instruções de reprodução. O projeto Wokwi é uma demonstração complementar; o repositório contém também os arquivos do receptor e os dados.
+O repositório público indicado abaixo documenta a versão anterior do projeto. O pacote revisado acrescenta firmware com comando do LED, fluxo de ensaio, registros brutos, tabela e gráficos de tempos. Esses arquivos devem ser incorporados ao repositório e à simulação pública antes da submissão para que os links correspondam integralmente à versão descrita neste artigo.
 
 Repositório do projeto: https://github.com/LuizFRod/atividade-objetos-inteligentes-ecg
 
@@ -232,15 +202,25 @@ Antes da submissão, o autor deve inserir aqui o link real do vídeo, conferir o
 
 4 Conclusões
 
-Foi implementado e demonstrado um sistema de visualização de ECG sintético com modelo externo de interface do AD8232, ESP32, publicação MQTT pela Internet e Node-RED. A leitura por ADC, o envio de lotes, a atuação por LED e o tratamento de desconexão simulada foram observados. Os dados e as figuras permitem reproduzir e examinar o comportamento dentro do ambiente de simulação.
+4.1 Alcance dos objetivos
 
-A execução não comprova aquisição de ECG físico nem as metas quantitativas da proposta inicial. O transporte TLS autenticado foi implantado e demonstrado, com 372 lotes e 9300 valores capturados em uma janela de 60 segundos. O vídeo ainda deve ser inserido antes da entrega. A contribuição ao ODS 3 é educacional, ao permitir estudar aquisição, disponibilidade e limites de monitoramento conectado. A transição para hardware físico e a aceitação acadêmica do modelo simulado exigem avaliação específica, sem extrapolar os resultados apresentados.
+Os objetivos de demonstrar leitura ADC de um modelo externo, publicação MQTT pela Internet, visualização e sinalização por LED foram alcançados no ambiente simulado. A coleta TLS documentada registrou 372 lotes e 9300 valores. A proposta física e as metas anteriores de entrega mínima de 99%, atraso inferior a um segundo e recuperação em trinta segundos não foram comprovadas. A contribuição ao ODS 3 é educacional, sem aquisição humana ou avaliação clínica.
+
+4.2 Problemas enfrentados e soluções
+
+A interpretação do gráfico exigiu distinguir contagens do ADC de amplitude cardíaca e separar aquisição real de geração sintética. O artigo explicita a origem matemática e os limites do modelo. Para tratar a desconexão simulada, o firmware sinaliza o estado por LED, e o receptor substitui a série por ausência de medição. O transporte inicial sem criptografia foi substituído por MQTT com TLS, autenticação e verificação do servidor. Durante o ensaio anterior, o gateway público do Wokwi encerrou uma conexão; a execução foi reiniciada e a senha reinserida, permitindo retomar o envio. Essa retomada manual não comprova recuperação automática dentro de prazo definido.
+
+4.3 Vantagens e desvantagens
+
+Como vantagens, a simulação permite repetir estados de contato sem aquisição em pessoas, inspecionar o código e reproduzir o caminho de comunicação. A integração Wi-Fi do ESP32 dispensa ponte serial para o broker, e o TLS autenticado protege o transporte. Como desvantagens, o modelo não reproduz o condicionamento elétrico do AD8232, depende do ambiente e do gateway do simulador e compartilha aquisição e rede no mesmo loop. O QoS 0 não confirma entrega, o painel não oferece histórico persistente e os ensaios não permitem generalizar desempenho para hardware físico.
+
+4.4 Melhorias propostas
+
+As próximas melhorias incluem separar aquisição e rede com tarefas e buffer circular, registrar os lotes publicados para distinguir descartes locais de perdas de transporte, persistir os dados recebidos e ampliar os testes de reconexão e autorização de tópicos. A avaliação de hardware físico requer revisão elétrica e procedimentos institucionais apropriados. Antes da submissão, permanecem necessárias a inclusão do vídeo e a confirmação docente da aceitação do modelo simulado como sensor.
 
 5 Referências
 
 ANALOG DEVICES. AD8232 Single Lead Heart Rate Monitor Front End. s.d. Disponível em: https://www.analog.com/en/products/ad8232.html. Acesso em: 5 nov. 2026.
-
-ECLIPSE FOUNDATION. mosquitto.conf man page. s.d. Disponível em: https://mosquitto.org/man/mosquitto-conf-5.html. Acesso em: 5 nov. 2026.
 
 EMQX. Default Authorization. s.d. b. Disponível em: https://docs.emqx.com/en/cloud/latest/deployments/default_authz.html. Acesso em: 5 nov. 2026.
 
@@ -252,6 +232,8 @@ ESPRESSIF SYSTEMS. ESP32 DevKitC V4 Getting Started Guide. s.d. b. Disponível e
 
 FLOWFUSE. Chart ui-chart Node-RED Dashboard 2.0. s.d. Disponível em: https://dashboard.flowfuse.com/nodes/widgets/ui-chart.html. Acesso em: 5 nov. 2026.
 
+MCSHARRY, Patrick E.; CLIFFORD, Gari D.; TARASSENKO, Lionel; SMITH, Leonard A. A dynamical model for generating synthetic electrocardiogram signals. IEEE Transactions on Biomedical Engineering, v. 50, n. 3, p. 289-294, 2003. Disponível em: https://physionet.org/content/ecgsyn/1.0.0/. Acesso em: 15 nov. 2026.
+
 NAÇÕES UNIDAS BRASIL. Objetivo de Desenvolvimento Sustentável 3 Saúde e Bem Estar. s.d. Disponível em: https://brasil.un.org/pt-br/sdgs/3. Acesso em: 5 nov. 2026.
 
 OASIS. MQTT Version 3.1.1. OASIS Standard, 29 out. 2014. Disponível em: https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html. Acesso em: 5 nov. 2026.
@@ -260,7 +242,9 @@ OPENJS FOUNDATION. Importing and Exporting Flows Node-RED. s.d. Disponível em: 
 
 RODRIGUES, Luiz Felipe. Sistema IoT de Monitoramento Cardíaco com ESP32 e Sensor AD8232. Aplicando Conhecimento 3. São Paulo: Universidade Presbiteriana Mackenzie, 2026. Documento base fornecido pelo autor.
 
-SPARKFUN ELECTRONICS. AD8232 Heart Rate Monitor Hookup Guide. s.d. Disponível em: https://learn.sparkfun.com/tutorials/ad8232-heart-rate-monitor-hookup-guide/all. Acesso registrado na proposta original: 13 out. 2026.
+SPARKFUN ELECTRONICS. AD8232 Heart Rate Monitor. Repositório de hardware e software. s.d. a. Disponível em: https://github.com/sparkfun/AD8232_Heart_Rate_Monitor. Acesso em: 15 nov. 2026.
+
+SPARKFUN ELECTRONICS. AD8232 Heart Rate Monitor Hookup Guide. s.d. b. Disponível em: https://learn.sparkfun.com/tutorials/ad8232-heart-rate-monitor-hookup-guide/all. Acesso registrado na proposta original: 13 out. 2026.
 
 WOKWI. Analog API. s.d. b. Disponível em: https://docs.wokwi.com/chips-api/analog. Acesso em: 5 nov. 2026.
 
@@ -270,7 +254,11 @@ Apêndice A Materiais e montagem da proposta física
 
 A proposta anterior especificava ESP32 DevKitC V4, módulo SparkFun AD8232 SEN 12650, três eletrodos, cabo de três vias, LED vermelho, resistor de 330 ohms, protoboard, jumpers e alimentação por power bank de 5 V via USB. Esses itens são mantidos como documentação da concepção física, sem afirmar compra, montagem ou ensaio de bancada. As fotografias e ilustrações deste apêndice foram recuperadas do artigo base fornecido pelo autor, com as atribuições originais.
 
-Figura A1. Referências físicas: ESP32 DevKitC V4 à esquerda e módulo AD8232 à direita. Fontes atribuídas no artigo base: Espressif Systems (s.d. b) e SparkFun Electronics (s.d.). São referências de componentes, não fotografias da execução deste trabalho.
+
+
+Figura A1. Referências físicas: ESP32 DevKitC V4 à esquerda e módulo AD8232 à direita. Fontes atribuídas no artigo base: Espressif Systems (s.d. b) e SparkFun Electronics (s.d. b). São referências de componentes, não fotografias da execução deste trabalho.
+
+
 
 Figura A2. Materiais auxiliares da proposta física original. As ilustrações são de elaboração própria do artigo base, sem escala e sem comprovação de aquisição. O resistor de 330 ohms corresponde à proposta física, distinta do resistor de 220 ohms da simulação.
 
