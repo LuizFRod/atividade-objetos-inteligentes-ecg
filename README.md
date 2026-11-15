@@ -9,7 +9,7 @@ Projeto acadêmico de Luiz Felipe Rodrigues, Universidade Presbiteriana Mackenzi
 - [Artigo editável](documentacao/artigo-ecg-revisado.docx)
 - [Instalação e configuração](documentacao/INSTALACAO.md)
 - [Segurança e testes](seguranca/ATIVACAO-TLS.md)
-- **YouTube não listado: o autor ainda precisa gravar e inserir o link no artigo.**
+
 
 O AD8232 SIMULADO é um modelo funcional de interface com sinal sintético. Não reproduz toda a eletrônica do AD8232, não utiliza pessoas e não realiza diagnóstico. A aceitação como sensor simulado depende do professor.
 
