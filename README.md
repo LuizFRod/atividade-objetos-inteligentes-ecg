@@ -1,6 +1,4 @@
-# Atualização de 15 de novembro de 2026
 
-Esta cópia contém comando MQTT do LED, quatro ensaios por elemento, registros brutos e gráficos. Os tempos entre extremidades são estimados com incerteza explicitada no artigo. Leia documentacao/ENSAIO-TEMPOS.md. O ensaio complementar substitui a afirmação histórica de ausência de comando remoto; os registros anteriores permanecem identificados como históricos. Os arquivos revisados estão neste repositório. A URL pública do Wokwi ainda precisa receber o firmware atualizado; para repetir o ensaio, carregue os arquivos da pasta `wokwi/`.
 
 # ECG sintético com ESP32 e AD8232 simulado
 
