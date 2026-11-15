@@ -6,6 +6,7 @@
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include <time.h>
+#include <esp_timer.h>
 constexpr char MQTT_HOST[] = "i066e913.ala.us-east-1.emqxsl.com";
 constexpr uint16_t MQTT_PORT = 8883;
 constexpr char MQTT_USERNAME[] = "esp32-84729";
@@ -75,6 +76,51 @@ uint32_t lastMqtt = 0, lastWifi = 0, perdidas = 0;
 int amostras[TAM_LOTE], quantidade = 0;
 bool loteValido = true;
 
+
+// Ensaio remoto: usa o mesmo topico autorizado e distingue comandos de amostras.
+// Nunca publicar comandos retained. IDs identificam respostas e evitam duplicatas.
+bool remoto = false;
+int estadoRemoto = LOW;
+int64_t remotoAte = 0;
+char ultimoId[33] = {};
+char sensorPendente[33] = {};
+
+void responderEnsaio(const char *tipo, const char *id, int valor, int64_t evento) {
+  char out[320];
+  snprintf(out, sizeof(out),
+    "{\"tipo\":\"%s\",\"id\":\"%s\",\"sessao\":\"%s\",\"evento_us\":%lld,\"valor\":%d}",
+    tipo, id, clientId, (long long)evento, valor);
+  mqtt.publish(TOPICO, out, false);
+}
+
+void receberComando(char *topic, byte *payload, unsigned int length) {
+  if (strcmp(topic, TOPICO) || length > 96) return;
+  char msg[97]; memcpy(msg, payload, length); msg[length] = 0;
+  char op[9], id[33], extra; int valor;
+  if (sscanf(msg, "ENSAIO|%8[A-Z]|%32[a-zA-Z0-9_-]|%d%c", op, id, &valor, &extra) != 3) return;
+  if (!strcmp(id, ultimoId)) return;
+  if (strcmp(op,"CLOCK") && strcmp(op,"LED") && strcmp(op,"SENSOR") && strcmp(op,"AUTO")) return;
+  if (!strcmp(op,"LED") && valor != 0 && valor != 1) return;
+  strncpy(ultimoId,id,sizeof(ultimoId)-1);
+  if (!strcmp(op,"CLOCK")) {
+    responderEnsaio("relogio", id, 0, esp_timer_get_time());
+  } else if (!strcmp(op,"LED")) {
+    // Modo temporario de ensaio; desconexao de eletrodos permanece prioritaria.
+    if (digitalRead(LO_PLUS) || digitalRead(LO_MINUS)) {
+      responderEnsaio("recusado_contato", id, valor, esp_timer_get_time()); return;
+    }
+    remoto=true; estadoRemoto=valor ? HIGH : LOW;
+    remotoAte=esp_timer_get_time()+15000000LL;
+    digitalWrite(LED,estadoRemoto);
+    responderEnsaio("atuador",id,valor,esp_timer_get_time());
+    Serial.printf("ENSAIO LED id=%s estado=%d GPIO2 aplicado\n",id,valor);
+  } else if (!strcmp(op,"SENSOR")) {
+    strncpy(sensorPendente,id,sizeof(sensorPendente)-1);
+  } else {
+    remoto=false; responderEnsaio("automatico",id,0,esp_timer_get_time());
+  }
+}
+
 void publicarLote() {
   if (!mqtt.connected()) { quantidade = 0; return; }
   char msg[768];
@@ -110,6 +156,7 @@ void setup() {
   wifi.setCACert(MQTT_CA_CERT);
   wifi.setHandshakeTimeout(20);
   mqtt.setServer(MQTT_HOST, MQTT_PORT);
+  mqtt.setCallback(receberComando);
   pedirSenha();
   configTime(0, 0, "pool.ntp.org", "time.google.com");
   mqtt.setBufferSize(1024);
@@ -132,6 +179,8 @@ void loop() {
     lastMqtt = nowMs;
     Serial.printf("Conectando MQTT: %s\n", clientId);
     if (mqtt.connect(clientId, MQTT_USERNAME, mqttPassword)) {
+      bool inscrito=mqtt.subscribe(TOPICO,0);
+      Serial.printf("ENSAIO inscricao enviada=%d; requer permissao de assinatura no topico.\n",inscrito);
       Serial.println("MQTTS CONECTADO: TLS com CA verificada e autenticacao aceita.");
     } else {
       Serial.printf("Conexao MQTT falhou: estado=%d. Sem alternativa em texto claro.\n", mqtt.state());
@@ -152,7 +201,14 @@ void loop() {
   bool connected = digitalRead(LO_PLUS) == LOW && digitalRead(LO_MINUS) == LOW;
   int adc = analogRead(ECG); // O sinal vem do modulo, nao de formula no ESP32.
   // Wokwi possui ADC simplificado: limiar didatico de pico, nao deteccao clinica.
-  digitalWrite(LED, !connected ? HIGH : (!mqtt.connected() ? ((nowMs / 500) % 2) : adc > 2000));
+  if (esp_timer_get_time() >= remotoAte || !mqtt.connected() || !connected) remoto=false;
+  digitalWrite(LED, !connected ? HIGH : (!mqtt.connected() ? ((nowMs / 500) % 2) : (remoto ? estadoRemoto : adc > 2000)));
+  if (sensorPendente[0] && mqtt.connected()) {
+    // Inicio: leitura ADC concluida; fim: chegada do evento ao MQTT IN do Node-RED.
+    int64_t detectado = esp_timer_get_time();
+    responderEnsaio("sensor",sensorPendente,adc,detectado);
+    sensorPendente[0]=0;
+  }
   if (quantidade && connected != loteValido) quantidade = 0;
   if (!quantidade) { primeiroIndice = indice; loteValido = connected; }
   amostras[quantidade++] = adc;
