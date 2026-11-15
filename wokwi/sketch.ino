@@ -1,6 +1,3 @@
-// Demonstrador academico: AD8232 SIMULADO -> ADC ESP32 -> MQTT.
-// Nao realiza medicao em pessoas. MQTT com TLS e autenticacao.
-// A senha e recebida pelo monitor serial apenas em RAM; nunca salve no projeto.
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -62,7 +59,7 @@ void lerSenhaSerial() {
 }
 
 constexpr int LED = 2;
-constexpr int ECG = 34;   // ADC1, leitura do componente externo
+constexpr int ECG = 34;
 constexpr int LO_PLUS = 32;
 constexpr int LO_MINUS = 33;
 constexpr uint32_t INTERVALO_US = 4000;
@@ -77,8 +74,8 @@ int amostras[TAM_LOTE], quantidade = 0;
 bool loteValido = true;
 
 
-// Ensaio remoto: usa o mesmo topico autorizado e distingue comandos de amostras.
-// Nunca publicar comandos retained. IDs identificam respostas e evitam duplicatas.
+
+
 bool remoto = false;
 int estadoRemoto = LOW;
 int64_t remotoAte = 0;
@@ -105,7 +102,7 @@ void receberComando(char *topic, byte *payload, unsigned int length) {
   if (!strcmp(op,"CLOCK")) {
     responderEnsaio("relogio", id, 0, esp_timer_get_time());
   } else if (!strcmp(op,"LED")) {
-    // Modo temporario de ensaio; desconexao de eletrodos permanece prioritaria.
+
     if (digitalRead(LO_PLUS) || digitalRead(LO_MINUS)) {
       responderEnsaio("recusado_contato", id, valor, esp_timer_get_time()); return;
     }
@@ -195,16 +192,16 @@ void loop() {
   if (missed) {
     perdidas += missed;
     indice += missed;
-    quantidade = 0; // nao misturar amostras separadas por lacuna no mesmo lote
+    quantidade = 0;
   }
   nextSample += (missed + 1) * INTERVALO_US;
   bool connected = digitalRead(LO_PLUS) == LOW && digitalRead(LO_MINUS) == LOW;
-  int adc = analogRead(ECG); // O sinal vem do modulo, nao de formula no ESP32.
-  // Wokwi possui ADC simplificado: limiar didatico de pico, nao deteccao clinica.
+  int adc = analogRead(ECG);
+
   if (esp_timer_get_time() >= remotoAte || !mqtt.connected() || !connected) remoto=false;
   digitalWrite(LED, !connected ? HIGH : (!mqtt.connected() ? ((nowMs / 500) % 2) : (remoto ? estadoRemoto : adc > 2000)));
   if (sensorPendente[0] && mqtt.connected()) {
-    // Inicio: leitura ADC concluida; fim: chegada do evento ao MQTT IN do Node-RED.
+
     int64_t detectado = esp_timer_get_time();
     responderEnsaio("sensor",sensorPendente,adc,detectado);
     sensorPendente[0]=0;
