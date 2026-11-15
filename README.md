@@ -1,3 +1,7 @@
+# Atualização de 15 de novembro de 2026
+
+Esta cópia contém comando MQTT do LED, quatro ensaios por elemento, registros brutos e gráficos. Os tempos entre extremidades são estimados com incerteza explicitada no artigo. Leia documentacao/ENSAIO-TEMPOS.md. O ensaio complementar substitui a afirmação histórica de ausência de comando remoto; os registros anteriores permanecem identificados como históricos. Os arquivos revisados estão neste repositório. A URL pública do Wokwi ainda precisa receber o firmware atualizado; para repetir o ensaio, carregue os arquivos da pasta `wokwi/`.
+
 # ECG sintético com ESP32 e AD8232 simulado
 
 Projeto acadêmico de Luiz Felipe Rodrigues, Universidade Presbiteriana Mackenzie. Um componente externo gera a saída analógica sintética, o ESP32 lê o ADC, atua no LED e publica por MQTT TLS autenticado. O Node-RED apresenta a curva e os estados.
@@ -29,7 +33,7 @@ Broker EMQX Cloud Serverless: `i066e913.ala.us-east-1.emqxsl.com:8883`. MQTT 3.1
 
 O firmware usa `WiFiClientSecure`, aguarda horário NTP, solicita a senha pelo serial e não oferece alternativa sem criptografia. O payload mantém dispositivo, indice, intervalo_us, eletrodos, origem, perdidas_temporizacao e amostras; acrescenta transporte=`mqtts` e sessao para identificar uma execução.
 
-A política de tópicos deve permitir somente publicação a `esp32-84729` e assinatura a `painel-ecg` no tópico acima, com negação geral de demais operações. Veja as regras e os limites da validação em `seguranca/ATIVACAO-TLS.md`.
+A política de tópicos deve permitir publicação e assinatura a `esp32-84729` e assinatura a `painel-ecg` somente no tópico acima, com negação geral de demais operações. Veja as regras e os limites da validação em `seguranca/ATIVACAO-TLS.md`.
 
 ## Evidências
 
@@ -45,7 +49,7 @@ O gateway público do Wokwi encerrou uma conexão durante o ensaio. A simulaçã
 
 GPIO34 lê o OUTPUT do modelo; GPIO32/33 recebem LOP/LON. LED GPIO2 com resistor 220 Ω: desconexão tem prioridade; sem MQTT pisca a cada 500 ms; em operação normal indica ADC acima do limiar didático 2000.
 
-São 25 leituras por lote, intervalo nominal 4000 µs (250 Hz). Rede e aquisição compartilham o loop e podem perder períodos. Lacunas de índices não isolam perda de rede, e o horário do gráfico é reconstruído no receptor. Não se demonstraram 99% de entrega, latência abaixo de 1 s, recuperação em 30 s, calibração para mV ou uso clínico. Não há comando MQTT remoto do LED nem buffer circular persistente.
+São 25 leituras por lote, intervalo nominal 4000 µs (250 Hz). Rede e aquisição compartilham o loop e podem perder períodos. Lacunas de índices não isolam perda de rede, e o horário do gráfico é reconstruído no receptor. Não se demonstraram 99% de entrega, latência abaixo de 1 s, recuperação em 30 s, calibração para mV ou uso clínico. Há comando MQTT remoto temporário do LED para ensaio, com expiração automática e prioridade para a desconexão dos eletrodos. Não há buffer circular persistente.
 
 ## Estrutura
 
