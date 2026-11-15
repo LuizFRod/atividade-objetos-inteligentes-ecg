@@ -1,0 +1,128 @@
+[
+  {
+    "id": "ecgensaio20261115",
+    "type": "tab",
+    "label": "ECG • ensaio de tempos",
+    "disabled": true,
+    "info": "Comandos no topico ja utilizado. Dados de sensor sintetico; nenhuma credencial exportada."
+  },
+  {
+    "id": "ensaio-send",
+    "type": "http in",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 120,
+    "url": "/ecg-ensaio/send",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": "",
+    "wires": [
+      [
+        "ensaio-preparar"
+      ]
+    ]
+  },
+  {
+    "id": "ensaio-preparar",
+    "type": "function",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 120,
+    "name": "Validar comando e registrar envio",
+    "outputs": 2,
+    "func": "const p=msg.payload;\nif (!p || ![\"CLOCK\",\"LED\",\"SENSOR\",\"AUTO\"].includes(p.op) || !/^[a-zA-Z0-9_-]{1,32}$/.test(p.id||\"\") || !Number.isInteger(p.valor) || (p.op===\"LED\" && ![0,1].includes(p.valor))) { msg.statusCode=400;msg.payload={erro:\"Comando invalido\"};return [null,msg]; }\nconst t=Date.now(); const out={topic:\"aula/ecg/esp32-84729/amostras\",payload:`ENSAIO|${p.op}|${p.id}|${p.valor}`,qos:\"0\",retain:false};\nflow.set(\"envio_\"+p.id,{...p,enviado_ms:t}); msg.payload={id:p.id,enviado_ms:t}; return [out,msg];",
+    "wires": [
+      [
+        "ensaio-out"
+      ],
+      [
+        "ensaio-httpres"
+      ]
+    ]
+  },
+  {
+    "id": "ensaio-out",
+    "type": "mqtt out",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 120,
+    "name": "Comando via TLS",
+    "topic": "aula/ecg/esp32-84729/amostras",
+    "qos": "0",
+    "retain": "false",
+    "broker": "b27bd33d919399c8",
+    "wires": []
+  },
+  {
+    "id": "ensaio-httpres",
+    "type": "http response",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 120,
+    "statusCode": "",
+    "headers": {},
+    "wires": []
+  },
+  {
+    "id": "ensaio-in",
+    "type": "mqtt in",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 260,
+    "name": "Resposta ESP32 via TLS",
+    "topic": "aula/ecg/esp32-84729/amostras",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "f7fb1e61b2b2c004",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "wires": [
+      [
+        "ensaio-registrar"
+      ]
+    ]
+  },
+  {
+    "id": "ensaio-registrar",
+    "type": "function",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 260,
+    "name": "Marcar chegada antes do processamento",
+    "outputs": 0,
+    "func": "const recebido_ms=Date.now();let p;try{p=typeof msg.payload===\"object\"?msg.payload:JSON.parse(msg.payload.toString());}catch(e){return null;}\nif(![\"sensor\",\"atuador\",\"relogio\",\"automatico\",\"recusado_contato\"].includes(p.tipo)||typeof p.id!==\"string\"||!Number.isSafeInteger(p.evento_us))return null;\nconst envio=flow.get(\"envio_\"+p.id);if(!envio)return null;\nlet dados=flow.get(\"ensaios\")||[];if(dados.some(x=>x.id===p.id))return null;dados.push({...envio,...p,recebido_ms});flow.set(\"ensaios\",dados.slice(-300)); return null;",
+    "wires": []
+  },
+  {
+    "id": "ensaio-results",
+    "type": "http in",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 400,
+    "url": "/ecg-ensaio/resultados",
+    "method": "get",
+    "upload": false,
+    "swaggerDoc": "",
+    "wires": [
+      [
+        "ensaio-get"
+      ]
+    ]
+  },
+  {
+    "id": "ensaio-get",
+    "type": "function",
+    "z": "ecgensaio20261115",
+    "x": 300,
+    "y": 400,
+    "outputs": 1,
+    "func": "msg.payload=flow.get(\"ensaios\")||[];return msg;",
+    "wires": [
+      [
+        "ensaio-httpres"
+      ]
+    ]
+  }
+]
