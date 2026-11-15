@@ -23,6 +23,7 @@ Em Access Control → Authorization → Username:
 | Username | Topic | Action | Permission |
 |---|---|---|---|
 | esp32-84729 | aula/ecg/esp32-84729/amostras | Publish | Allow |
+| esp32-84729 | aula/ecg/esp32-84729/amostras | Subscribe | Allow |
 | painel-ecg | aula/ecg/esp32-84729/amostras | Subscribe | Allow |
 
 Em All Users, a regra final é Topic `#`, Action `Publish & Subscribe`, Permission `Deny`. A ordem de avaliação do provedor verifica regras específicas e depois a negação geral. Authentication cadastra as senhas; Authorization define as permissões. Não são a mesma etapa.
