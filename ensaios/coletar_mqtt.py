@@ -1,4 +1,3 @@
-"""Coleta MQTT 3.1.1 QoS0 para o demonstrador sintetico, sem dependencias externas."""
 import argparse, datetime, getpass, json, socket, ssl, struct, time, uuid
 from pathlib import Path
 
