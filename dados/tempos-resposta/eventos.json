@@ -1,0 +1,382 @@
+[
+  {
+    "op": "LED",
+    "id": "6321075f_1",
+    "valor": 1,
+    "enviado_ms": 1794765824297,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 30348361,
+    "recebido_ms": 1794765824777
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_2",
+    "valor": 0,
+    "enviado_ms": 1794765824850,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 30713576,
+    "recebido_ms": 1794765825303
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_3",
+    "valor": 0,
+    "enviado_ms": 1794765825369,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 31081632,
+    "recebido_ms": 1794765825818
+  },
+  {
+    "op": "SENSOR",
+    "id": "6321075f_4",
+    "valor": 1351,
+    "enviado_ms": 1794765825886,
+    "tipo": "sensor",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 31447692,
+    "recebido_ms": 1794765826340
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_5",
+    "valor": 0,
+    "enviado_ms": 1794765826413,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 31847793,
+    "recebido_ms": 1794765826912
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_6",
+    "valor": 0,
+    "enviado_ms": 1794765826930,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 32181633,
+    "recebido_ms": 1794765827394
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_7",
+    "valor": 0,
+    "enviado_ms": 1794765827456,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 32547791,
+    "recebido_ms": 1794765827914
+  },
+  {
+    "op": "SENSOR",
+    "id": "6321075f_8",
+    "valor": 1392,
+    "enviado_ms": 1794765827982,
+    "tipo": "sensor",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 32914770,
+    "recebido_ms": 1794765828446
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_9",
+    "valor": 0,
+    "enviado_ms": 1794765828486,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 33279743,
+    "recebido_ms": 1794765828987
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_10",
+    "valor": 0,
+    "enviado_ms": 1794765829008,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 33648064,
+    "recebido_ms": 1794765829498
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_11",
+    "valor": 0,
+    "enviado_ms": 1794765829532,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 34014801,
+    "recebido_ms": 1794765830015
+  },
+  {
+    "op": "SENSOR",
+    "id": "6321075f_12",
+    "valor": 1351,
+    "enviado_ms": 1794765830060,
+    "tipo": "sensor",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 34414810,
+    "recebido_ms": 1794765830576
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_13",
+    "valor": 0,
+    "enviado_ms": 1794765830585,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 34747828,
+    "recebido_ms": 1794765831050
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_14",
+    "valor": 0,
+    "enviado_ms": 1794765831110,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 35114537,
+    "recebido_ms": 1794765831573
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_15",
+    "valor": 0,
+    "enviado_ms": 1794765831626,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 35481026,
+    "recebido_ms": 1794765832110
+  },
+  {
+    "op": "SENSOR",
+    "id": "6321075f_16",
+    "valor": 1447,
+    "enviado_ms": 1794765832146,
+    "tipo": "sensor",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 35815360,
+    "recebido_ms": 1794765832591
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_17",
+    "valor": 0,
+    "enviado_ms": 1794765832669,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 36179415,
+    "recebido_ms": 1794765833121
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_18",
+    "valor": 1,
+    "enviado_ms": 1794765833186,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 36547498,
+    "recebido_ms": 1794765833640
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_19",
+    "valor": 0,
+    "enviado_ms": 1794765833706,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 36912634,
+    "recebido_ms": 1794765834169
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_20",
+    "valor": 0,
+    "enviado_ms": 1794765834229,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 37280713,
+    "recebido_ms": 1794765834692
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_21",
+    "valor": 0,
+    "enviado_ms": 1794765834758,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 37645787,
+    "recebido_ms": 1794765835216
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_22",
+    "valor": 0,
+    "enviado_ms": 1794765835284,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 38013949,
+    "recebido_ms": 1794765835757
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_23",
+    "valor": 0,
+    "enviado_ms": 1794765835803,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 38413699,
+    "recebido_ms": 1794765836307
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_24",
+    "valor": 0,
+    "enviado_ms": 1794765836319,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 38747290,
+    "recebido_ms": 1794765836789
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_25",
+    "valor": 0,
+    "enviado_ms": 1794765836842,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 39113804,
+    "recebido_ms": 1794765837305
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_26",
+    "valor": 1,
+    "enviado_ms": 1794765837360,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 39480443,
+    "recebido_ms": 1794765837819
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_27",
+    "valor": 0,
+    "enviado_ms": 1794765837887,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 39846984,
+    "recebido_ms": 1794765838345
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_28",
+    "valor": 1,
+    "enviado_ms": 1794765838410,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 40213633,
+    "recebido_ms": 1794765838862
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_29",
+    "valor": 0,
+    "enviado_ms": 1794765838938,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 40580331,
+    "recebido_ms": 1794765839385
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_30",
+    "valor": 0,
+    "enviado_ms": 1794765839453,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 40980193,
+    "recebido_ms": 1794765839948
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_31",
+    "valor": 0,
+    "enviado_ms": 1794765839975,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 41313504,
+    "recebido_ms": 1794765840424
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_32",
+    "valor": 0,
+    "enviado_ms": 1794765840501,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 41678238,
+    "recebido_ms": 1794765840958
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_33",
+    "valor": 0,
+    "enviado_ms": 1794765841026,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 42046717,
+    "recebido_ms": 1794765841494
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_34",
+    "valor": 0,
+    "enviado_ms": 1794765841548,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 42413346,
+    "recebido_ms": 1794765842027
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_35",
+    "valor": 0,
+    "enviado_ms": 1794765842058,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 42779881,
+    "recebido_ms": 1794765842509
+  },
+  {
+    "op": "LED",
+    "id": "6321075f_36",
+    "valor": 1,
+    "enviado_ms": 1794765842583,
+    "tipo": "atuador",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 43146632,
+    "recebido_ms": 1794765843030
+  },
+  {
+    "op": "CLOCK",
+    "id": "6321075f_37",
+    "valor": 0,
+    "enviado_ms": 1794765843097,
+    "tipo": "relogio",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 43545967,
+    "recebido_ms": 1794765843604
+  },
+  {
+    "op": "AUTO",
+    "id": "6321075f_38",
+    "valor": 0,
+    "enviado_ms": 1794765843619,
+    "tipo": "automatico",
+    "sessao": "ecg84729-00c40a24-2f074aca",
+    "evento_us": 43879009,
+    "recebido_ms": 1794765844077
+  }
+]

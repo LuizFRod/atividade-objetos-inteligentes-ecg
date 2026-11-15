@@ -1,0 +1,14 @@
+{
+  "Sensor ADC": {
+    "n": 4,
+    "media_estimada_ms": 229.21775,
+    "media_limite_inferior_ms": 0,
+    "media_limite_superior_ms": 458.43525
+  },
+  "Atuador LED": {
+    "n": 4,
+    "media_estimada_ms": 226.909,
+    "media_limite_inferior_ms": 0.568,
+    "media_limite_superior_ms": 453.25
+  }
+}
