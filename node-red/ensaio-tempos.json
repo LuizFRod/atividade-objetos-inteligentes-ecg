@@ -30,7 +30,7 @@
     "y": 120,
     "name": "Validar comando e registrar envio",
     "outputs": 2,
-    "func": "const p=msg.payload;\nif (!p || ![\"CLOCK\",\"LED\",\"SENSOR\",\"AUTO\"].includes(p.op) || !/^[a-zA-Z0-9_-]{1,32}$/.test(p.id||\"\") || !Number.isInteger(p.valor) || (p.op===\"LED\" && ![0,1].includes(p.valor))) { msg.statusCode=400;msg.payload={erro:\"Comando invalido\"};return [null,msg]; }\nconst t=Date.now(); const out={topic:\"aula/ecg/esp32-84729/amostras\",payload:`ENSAIO|${p.op}|${p.id}|${p.valor}`,qos:\"0\",retain:false};\nflow.set(\"envio_\"+p.id,{...p,enviado_ms:t}); msg.payload={id:p.id,enviado_ms:t}; return [out,msg];",
+    "func": "const p=msg.payload;\nif (!p || ![\"CLOCK\",\"LED\",\"SENSOR\",\"AUTO\"].includes(p.op) || !/^[a-zA-Z0-9_-]{1,32}$/.test(p.id||\"\") || !Number.isInteger(p.valor) || (p.op===\"LED\" && ![0,1].includes(p.valor))) { msg.statusCode=400;msg.payload={erro:\"Comando invalido\"};return [null,msg]; }\nconst t=Date.now(); const out={topic:\"aula/ecg/esp32-84729/amostras\",payload:`ENSAIO|${p.op}|${p.id}|${p.valor}`,qos:\"0\",retain:false};\nflow.set(\"envio_\"+p.id,{...p,enviado_ms:t}); msg.payload={id:p.id,enviado_ms:t}; return [out,msg];\n",
     "wires": [
       [
         "ensaio-out"
@@ -92,7 +92,7 @@
     "y": 260,
     "name": "Marcar chegada antes do processamento",
     "outputs": 0,
-    "func": "const recebido_ms=Date.now();let p;try{p=typeof msg.payload===\"object\"?msg.payload:JSON.parse(msg.payload.toString());}catch(e){return null;}\nif(![\"sensor\",\"atuador\",\"relogio\",\"automatico\",\"recusado_contato\"].includes(p.tipo)||typeof p.id!==\"string\"||!Number.isSafeInteger(p.evento_us))return null;\nconst envio=flow.get(\"envio_\"+p.id);if(!envio)return null;\nlet dados=flow.get(\"ensaios\")||[];if(dados.some(x=>x.id===p.id))return null;dados.push({...envio,...p,recebido_ms});flow.set(\"ensaios\",dados.slice(-300)); return null;",
+    "func": "const recebido_ms=Date.now();let p;try{p=typeof msg.payload===\"object\"?msg.payload:JSON.parse(msg.payload.toString());}catch(e){return null;}\nif(![\"sensor\",\"atuador\",\"relogio\",\"automatico\",\"recusado_contato\"].includes(p.tipo)||typeof p.id!==\"string\"||!Number.isSafeInteger(p.evento_us))return null;\nconst envio=flow.get(\"envio_\"+p.id);if(!envio)return null;\nlet dados=flow.get(\"ensaios\")||[];if(dados.some(x=>x.id===p.id))return null;dados.push({...envio,...p,recebido_ms});flow.set(\"ensaios\",dados.slice(-300)); return null;\n",
     "wires": []
   },
   {
@@ -118,7 +118,7 @@
     "x": 300,
     "y": 400,
     "outputs": 1,
-    "func": "msg.payload=flow.get(\"ensaios\")||[];return msg;",
+    "func": "msg.payload=flow.get(\"ensaios\")||[];return msg;\n",
     "wires": [
       [
         "ensaio-httpres"
